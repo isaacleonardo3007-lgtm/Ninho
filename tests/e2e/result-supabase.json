@@ -1,0 +1,134 @@
+[
+  {
+    "area": "Supabase",
+    "nome": "Modo Supabase ativo (sem banner de modo local)",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Supabase",
+    "nome": "Cadastro pede confirmação de e-mail",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Supabase",
+    "nome": "Trigger criou perfil, assinatura grátis e consentimentos",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Supabase",
+    "nome": "Login antes de confirmar e-mail é recusado em português",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Supabase",
+    "nome": "Senha errada → mensagem clara",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Supabase",
+    "nome": "Login → consentimentos puxados do servidor (sem pedir de novo) → gestação",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Supabase",
+    "nome": "Sincroniza com o servidor",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Supabase",
+    "nome": "Gestação, consulta e perfil no banco",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Supabase",
+    "nome": "updated_at vem do servidor",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Supabase",
+    "nome": "Servidor recusa Plus no grátis; app marca e não fica em loop",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Supabase",
+    "nome": "Ao virar Plus, registros bloqueados sobem sozinhos",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Supabase",
+    "nome": "Foto vai para o Storage privado na pasta da usuária",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Supabase",
+    "nome": "Offline: registra e mostra aviso de sem internet",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Supabase",
+    "nome": "Volta online: pendências sobem",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Supabase",
+    "nome": "Exclusão vira deleted_at no servidor",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Supabase",
+    "nome": "2º aparelho baixa tudo (consulta excluída não volta)",
+    "ok": true,
+    "nota": "{\"c\":1,\"e\":1,\"u\":1,\"plus\":true,\"sangue\":\"A+\",\"ig\":12}"
+  },
+  {
+    "area": "Supabase",
+    "nome": "2º aparelho baixa a foto do Storage",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Supabase",
+    "nome": "Registro feito no 2º aparelho aparece no 1º",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Supabase",
+    "nome": "Checkout devolve link https do Mercado Pago",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Supabase",
+    "nome": "Sair apaga o cache do aparelho",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Supabase",
+    "nome": "Excluir conta remove dados do servidor e do Storage",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Supabase",
+    "nome": "Sem erros de JavaScript",
+    "ok": true,
+    "nota": ""
+  }
+]

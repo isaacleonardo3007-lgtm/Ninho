@@ -1,0 +1,476 @@
+[
+  {
+    "area": "Cadastro",
+    "nome": "Abre na tela de login",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Cadastro",
+    "nome": "Login vazio é bloqueado com mensagem",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Cadastro",
+    "nome": "Exige nome e sobrenome",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Cadastro",
+    "nome": "Bloqueia senha fraca",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Cadastro",
+    "nome": "Bloqueia senhas diferentes",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Cadastro",
+    "nome": "Avança para consentimento",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Cadastro",
+    "nome": "Sem aceite dos termos não cria conta",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Cadastro",
+    "nome": "Sem consentimento de dados de saúde não cria conta",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Cadastro",
+    "nome": "Conta criada → configuração da gestação",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Cadastro",
+    "nome": "Consentimentos registrados com versão",
+    "ok": true,
+    "nota": "termos:true,privacidade:true,dados_saude:true,notificacoes:true,pesquisa:false"
+  },
+  {
+    "area": "Cadastro",
+    "nome": "Identificação do cadastro no perfil",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "IG / 1º USG",
+    "nome": "USG é a opção padrão e recomendada",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "IG / 1º USG",
+    "nome": "Bloqueia data de USG futura",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "IG / 1º USG",
+    "nome": "Bloqueia IG do laudo fora de 4–42 sem",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "IG / 1º USG",
+    "nome": "Prévia: USG há 30 dias com 8s3d → hoje 12s5d",
+    "ok": true,
+    "nota": "Hoje: 12 semanas e 5 dias · DPP 22/05/2027"
+  },
+  {
+    "area": "IG / 1º USG",
+    "nome": "Compara DUM × USG e aplica a regra de redatação",
+    "ok": true,
+    "nota": "Hoje: 12 semanas e 5 dias · DPP 22/05/2027Diferença de 10 dias entre a DUM e o ultrassom. Acima de 5 dias, a regra usada pelos obstetras (ACOG/FEBRASGO) é segui"
+  },
+  {
+    "area": "IG / 1º USG",
+    "nome": "Oferece importar dados da versão anterior",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Identificação",
+    "nome": "CPF inválido é recusado",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Identificação",
+    "nome": "CNS inválido é recusado",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Identificação",
+    "nome": "Entra no app após identificação",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "IG / 1º USG",
+    "nome": "Cabeçalho mostra IG e método (USG)",
+    "ok": true,
+    "nota": "12 semanas e 5 dias · IG pelo 1º ultrassom"
+  },
+  {
+    "area": "IG / 1º USG",
+    "nome": "DPP = data do USG − IG do laudo + 280 dias",
+    "ok": true,
+    "nota": "2027-05-22 vs 2027-05-22"
+  },
+  {
+    "area": "Segurança",
+    "nome": "Nome social com HTML não executa script (XSS)",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Segurança",
+    "nome": "Sem erros de JavaScript até aqui",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Plano grátis",
+    "nome": "Aba Exames bloqueada no grátis",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Plano grátis",
+    "nome": "Camada de dados recusa registro Plus no grátis",
+    "ok": true,
+    "nota": "PLUS"
+  },
+  {
+    "area": "Plano grátis",
+    "nome": "Curvas da Caderneta liberadas no grátis",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Plano grátis",
+    "nome": "Consultas liberadas no grátis",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Plano grátis",
+    "nome": "Jornada lista exames da Caderneta (ex.: HTLV, sífilis, eletroforese)",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Plano grátis",
+    "nome": "Calendário vacinal inclui VSR e dT",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Consultas",
+    "nome": "Bloqueia PA invertida (80/120)",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Consultas",
+    "nome": "Bloqueia BCF absurdo",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Consultas",
+    "nome": "Salva consulta com campos da Caderneta",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Consultas",
+    "nome": "IG da consulta calculada pela data (11s2d)",
+    "ok": true,
+    "nota": "11s2d"
+  },
+  {
+    "area": "Consultas",
+    "nome": "PA 165/112 na consulta → alerta URGENTE",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Consultas",
+    "nome": "BCF 185 → alerta de atenção",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Consultas",
+    "nome": "Alerta urgente oferece ligar 192",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Consultas",
+    "nome": "Não duplica a mesma dose de vacina",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Consultas",
+    "nome": "Gotas não podem ser “farmadas” apagando e registrando de novo",
+    "ok": true,
+    "nota": "+20"
+  },
+  {
+    "area": "Curvas",
+    "nome": "Curva AU: P10/P50/P90 + pontos",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Curvas",
+    "nome": "AU 40 sem: P50 38,0 cm · P90 40,5 cm (INTERGROWTH)",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Curvas",
+    "nome": "Faixa de ganho de peso (eutrofia) em 40 sem = 8–12 kg (MS/Kac)",
+    "ok": true,
+    "nota": "[12,8]"
+  },
+  {
+    "area": "Curvas",
+    "nome": "Gráfico de pressão das consultas com linhas 140/90 e 160/110",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Datas",
+    "nome": "“Hoje” às 22h30 de Brasília é o dia local (não UTC)",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Persistência",
+    "nome": "Sessão e dados continuam após recarregar",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Ninho+",
+    "nome": "Ativa Plus (demonstração local)",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Ninho+",
+    "nome": "Exames pendentes do trimestre aparecem",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Ninho+",
+    "nome": "Não salva exame vazio",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Ninho+",
+    "nome": "Salva exame com vírgula decimal",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Ninho+",
+    "nome": "Hb 9,5 → alerta de anemia",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Ninho+",
+    "nome": "Sífilis reagente → orientação de tratamento da parceria",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Ninho+",
+    "nome": "Imagem do ultrassom comprimida e guardada no IndexedDB",
+    "ok": true,
+    "nota": "{\"path\":\"d47e4105-20d8-470e-acdd-c70cc9e0edd2/ultrassons/6d5df79b-7adf-4b7a-a18e-3880f0569524.jpg\",\"size\":46895,\"type\":\"image/jpeg\"}"
+  },
+  {
+    "area": "Ninho+",
+    "nome": "Imagem aparece no álbum",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Ninho+",
+    "nome": "Armazena 6 MB sem estourar a cota (IndexedDB)",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Ninho+",
+    "nome": "2 glicemias 2 h acima de 120 → alerta “acima da meta”",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Ninho+",
+    "nome": "Medição de PA incoerente é bloqueada",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Ninho+",
+    "nome": "PA 145/92 + visão embaçada → URGENTE (pré-eclâmpsia)",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Ninho+",
+    "nome": "Recusa horário inválido da medicação",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Ninho+",
+    "nome": "Normaliza “8h” → 08:00",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Movimentos",
+    "nome": "Contagem baixa interrompida → alerta de atenção",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Movimentos",
+    "nome": "6 movimentos em 2 h → URGENTE",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Movimentos",
+    "nome": "30 sem sem VSR → lembrete da vacina VSR",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Sinais de perigo",
+    "nome": "Check de sinais → tela de urgência com 192",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Sinais de perigo",
+    "nome": "Lista da Caderneta inclui visão, epigástrio e febre 37,8",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Notificações",
+    "nome": "Gera lembretes (consulta, movimentos, medicação)",
+    "ok": true,
+    "nota": "consulta,movimentos,medicacao,semana"
+  },
+  {
+    "area": "Notificações",
+    "nome": "Texto padrão não expõe dados de saúde",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Notificações",
+    "nome": "Respeita horário de silêncio (22h–7h) nos lembretes automáticos",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Notificações",
+    "nome": "Service worker real registrado (offline + push)",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Privacidade",
+    "nome": "Exporta todos os dados (portabilidade)",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Privacidade",
+    "nome": "Exportação não leva campos internos",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Privacidade",
+    "nome": "Importa dados da versão anterior (inclui PA “12x8” → 120/80)",
+    "ok": true,
+    "nota": "{\"c\":3,\"n\":1,\"pa\":true}"
+  },
+  {
+    "area": "Privacidade",
+    "nome": "Revogar consentimento de notificações zera os lembretes",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Acessibilidade",
+    "nome": "Botões só com ícone têm aria-label",
+    "ok": true,
+    "nota": "0 sem rótulo"
+  },
+  {
+    "area": "Conta",
+    "nome": "Exclusão exige digitar EXCLUIR",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Conta",
+    "nome": "Conta excluída volta ao login",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Conta",
+    "nome": "Conta excluída não entra mais",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Conta",
+    "nome": "Não sobram dados da conta no aparelho",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Geral",
+    "nome": "Sem erros de JavaScript no fluxo completo",
+    "ok": true,
+    "nota": ""
+  },
+  {
+    "area": "Geral",
+    "nome": "Fluxo completo também no modo escuro",
+    "ok": true,
+    "nota": ""
+  }
+]
