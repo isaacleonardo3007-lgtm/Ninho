@@ -89,8 +89,9 @@
 
   /* ---------- Consultas de pré-natal (Caderneta 2026) ----------
      Mínimo de 7 consultas; início até a 12ª semana; mensais até 28 sem,
-     quinzenais de 28 a 36, semanais a partir de 37. */
-  const CONSULTAS = { minimo: 7, inicioAte: 12 };
+     quinzenais da 28ª à 36ª, semanais a partir da 36ª; ao menos 1 consulta
+     odontológica; no mínimo 2 consultas puerperais. */
+  const CONSULTAS = { minimo: 7, inicioAte: 12, odonto: 1, puerperais: 2 };
   function intervaloConsulta(w) { return w < 28 ? 28 : w < 36 ? 14 : 7; }
 
   /* ---------- Exames (Caderneta 2026, "Exames pré-natal") ----------
@@ -98,12 +99,13 @@
      tipo: 'num' (valor numérico) | 'qual' (reagente / não reagente) | 'opt' */
   const QUAL = ['Não reagente', 'Reagente', 'Indeterminado'];
   const EXAMES = [
+    { id: 'teste_gravidez', nome: 'Teste rápido de gravidez', tri: [1], tipo: 'opt', opcoes: ['Positivo', 'Negativo'] },
     { id: 'abo_rh', nome: 'Tipagem sanguínea ABO/Rh', tri: [1], tipo: 'opt', opcoes: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] },
     { id: 'hb', nome: 'Hemograma — hemoglobina', tri: [1, 3], tipo: 'num', unidade: 'g/dL' },
     { id: 'ht', nome: 'Hemograma — hematócrito', tri: [1, 3], tipo: 'num', unidade: '%' },
     { id: 'eletroforese', nome: 'Eletroforese de hemoglobina', tri: [1], tipo: 'opt', opcoes: ['AA', 'AS', 'AC', 'SS', 'SC', 'Outro'] },
-    { id: 'coombs', nome: 'Coombs indireto (se Rh negativo)', tri: [1, 2, 3], cond: 'rh_neg', tipo: 'opt', opcoes: ['Negativo', 'Positivo'] },
-    { id: 'glicemia_jejum', nome: 'Glicemia em jejum', tri: [1, 3], tipo: 'num', unidade: 'mg/dL' },
+    { id: 'coombs', nome: 'Coombs indireto (se Rh negativo)', tri: [1, 2, 3], cond: 'rh_neg', nota: 'No 2º e 3º trimestres, repete se o resultado do 1º trimestre foi negativo.', tipo: 'opt', opcoes: ['Negativo', 'Positivo'] },
+    { id: 'glicemia_jejum', nome: 'Glicemia em jejum', tri: [1, 3], nota: 'Se a 1ª consulta for depois de 24 semanas, a Caderneta indica o TOTG 75 g.', tipo: 'num', unidade: 'mg/dL' },
     { id: 'totg_0', nome: 'TOTG 75 g — jejum', tri: [2], janela: [24, 28], tipo: 'num', unidade: 'mg/dL', grupo: 'totg' },
     { id: 'totg_1h', nome: 'TOTG 75 g — 1 hora', tri: [2], janela: [24, 28], tipo: 'num', unidade: 'mg/dL', grupo: 'totg' },
     { id: 'totg_2h', nome: 'TOTG 75 g — 2 horas', tri: [2], janela: [24, 28], tipo: 'num', unidade: 'mg/dL', grupo: 'totg' },
@@ -112,17 +114,33 @@
     { id: 'hepb', nome: 'Hepatite B (teste rápido ou HBsAg)', tri: [1], tipo: 'qual', opcoes: QUAL },
     { id: 'hepc', nome: 'Hepatite C (teste rápido ou anti-HCV)', tri: [1], tipo: 'qual', opcoes: QUAL },
     { id: 'toxo_igg', nome: 'Toxoplasmose IgG', tri: [1, 2, 3], tipo: 'qual', opcoes: QUAL, nota: 'Se IgG não reagente (suscetível), repete no 2º e 3º trimestres.' },
-    { id: 'toxo_igm', nome: 'Toxoplasmose IgM', tri: [1, 2, 3], tipo: 'qual', opcoes: QUAL },
+    { id: 'toxo_igm', nome: 'Toxoplasmose IgM', tri: [1, 2, 3], nota: 'No 2º e 3º trimestres, só se a IgG não for reagente.', tipo: 'qual', opcoes: QUAL },
     { id: 'htlv', nome: 'HTLV (triagem)', tri: [1], tipo: 'qual', opcoes: QUAL },
     { id: 'eas', nome: 'Urina tipo I (EAS)', tri: [1, 3], tipo: 'opt', opcoes: ['Normal', 'Alterado'] },
     { id: 'urocultura', nome: 'Urocultura com antibiograma', tri: [1, 3], tipo: 'opt', opcoes: ['Negativa', 'Positiva'] },
     { id: 'usg_1tri', nome: 'Ultrassom obstétrico (idealmente 7–12 sem)', tri: [1], janela: [7, 12], tipo: 'texto' },
     { id: 'chagas', nome: 'Doença de Chagas (se suspeita)', tri: [1], cond: 'indicacao', tipo: 'qual', opcoes: QUAL },
-    { id: 'malaria', nome: 'Malária (região endêmica)', tri: [1, 2, 3], cond: 'indicacao', tipo: 'qual', opcoes: ['Negativo', 'Positivo'] },
+    { id: 'malaria', nome: 'Malária (gota espessa ou teste rápido — regiões endêmicas)', tri: [1, 2, 3], cond: 'indicacao', tipo: 'qual', opcoes: ['Negativo', 'Positivo'] },
+    /* Com indicação clínica (Caderneta 2026, 4.2.1) */
     { id: 'tsh', nome: 'TSH (se indicado)', tri: [], cond: 'indicacao', tipo: 'num', unidade: 'mUI/L' },
+    { id: 'tuberculose', nome: 'Teste para tuberculose', tri: [], cond: 'indicacao', tipo: 'qual', opcoes: QUAL },
+    { id: 'proteinuria', nome: 'Proteinúria (teste rápido na urina)', tri: [], cond: 'indicacao', tipo: 'opt', opcoes: ['Negativa', 'Traços', '+', '++', '+++'] },
+    { id: 'clamidia_gono', nome: 'Clamídia e gonorreia', tri: [], cond: 'indicacao', tipo: 'opt', opcoes: ['Não detectado', 'Detectado'] },
+    { id: 'colo_utero', nome: 'Rastreamento do câncer do colo do útero (Papanicolau ou teste de HPV)', tri: [], cond: 'indicacao', tipo: 'opt', opcoes: ['Normal', 'Alterado'] },
+    { id: 'parasitologico', nome: 'Parasitológico de fezes', tri: [], cond: 'indicacao', tipo: 'opt', opcoes: ['Negativo', 'Positivo'] },
+    { id: 'secrecao_vaginal', nome: 'Exame de secreção vaginal', tri: [], cond: 'indicacao', tipo: 'opt', opcoes: ['Normal', 'Alterado'] },
+    /* Pré-natal de alto risco, conforme critério clínico (Caderneta 2026, 4.2.2) */
+    { id: 'plaquetas', nome: 'Contagem de plaquetas', tri: [], cond: 'alto_risco', tipo: 'num', unidade: 'mil/mm³' },
+    { id: 'proteinuria_24h', nome: 'Proteínas na urina de 24 horas', tri: [], cond: 'alto_risco', tipo: 'num', unidade: 'mg/24 h' },
+    { id: 'funcao_renal', nome: 'Ureia, creatinina e ácido úrico', tri: [], cond: 'alto_risco', tipo: 'texto' },
+    { id: 'ecg', nome: 'Eletrocardiograma', tri: [], cond: 'alto_risco', tipo: 'texto' },
+    { id: 'doppler', nome: 'Ultrassom obstétrico com Doppler', tri: [], cond: 'alto_risco', tipo: 'texto' },
+    { id: 'ctg', nome: 'Cardiotocografia anteparto', tri: [], cond: 'alto_risco', tipo: 'texto' },
     { id: 'outro', nome: 'Outro exame', tri: [], cond: 'indicacao', tipo: 'texto' },
   ];
   const EXAME = Object.fromEntries(EXAMES.map(e => [e.id, e]));
+  /** No parto ou pós-parto imediato (Caderneta 2026, 4.2.1) — feitos na maternidade */
+  const EXAMES_PARTO = ['Teste rápido para HIV', 'Teste rápido para sífilis ou VDRL/RPR', 'Teste rápido para hepatite B (se não feito no pré-natal)', 'Teste rápido para hepatite C (se não feito no pré-natal)'];
 
   /* ---------- Interpretação de exames ----------
      Hb: OMS/MS — anemia < 11 g/dL; < 8 g/dL é critério de encaminhamento (MS, CAB 32).
@@ -147,7 +165,7 @@
       case 'tsh': if (isNaN(n)) return null; return n > 4 ? { sev: 'media', msg: `TSH ${n} mUI/L acima do esperado para a gestação. Mostre à sua equipe.` } : { sev: 'ok' };
       case 'sifilis': return v === 'Reagente' ? { sev: 'alta', msg: 'Sífilis reagente: o tratamento com penicilina precisa começar o quanto antes, e a parceria também deve ser testada e tratada. É gratuito no SUS.' } : v ? { sev: 'ok' } : null;
       case 'hiv': return v === 'Reagente' ? { sev: 'alta', msg: 'HIV reagente: com acompanhamento e tratamento, a chance de transmissão para o bebê fica muito baixa. Procure sua equipe para iniciar o cuidado.' } : v ? { sev: 'ok' } : null;
-      case 'hepb': case 'hepc': case 'htlv': case 'chagas':
+      case 'hepb': case 'hepc': case 'htlv': case 'chagas': case 'tuberculose':
         return v === 'Reagente' ? { sev: 'media', msg: `${EXAME[id].nome}: resultado reagente. Sua equipe vai orientar os próximos passos e os cuidados com o bebê.` } : v ? { sev: 'ok' } : null;
       case 'toxo_igm': return v === 'Reagente' ? { sev: 'alta', msg: 'Toxoplasmose IgM reagente pode indicar infecção recente. Procure sua equipe para avaliação e tratamento.' } : v ? { sev: 'ok' } : null;
       case 'toxo_igg': return v === 'Não reagente' ? { sev: 'info', msg: 'Toxoplasmose IgG não reagente: você ainda não teve contato. Capriche nos cuidados (carne bem passada, lavar bem frutas e verduras, evitar fezes de gato) e repita o exame no 2º e 3º trimestres.' } : v ? { sev: 'ok' } : null;
@@ -155,6 +173,9 @@
       case 'coombs': return v === 'Positivo' ? { sev: 'alta', msg: 'Coombs indireto positivo precisa de avaliação especializada. Procure sua equipe.' } : v ? { sev: 'ok' } : null;
       case 'urocultura': return v === 'Positiva' ? { sev: 'media', msg: 'Urocultura positiva: na gestação, infecção urinária deve ser tratada mesmo sem sintomas. Leve à equipe.' } : v ? { sev: 'ok' } : null;
       case 'eletroforese': return v && v !== 'AA' ? { sev: 'info', msg: `Eletroforese ${v}: converse com sua equipe sobre o significado para você e o bebê.` } : v ? { sev: 'ok' } : null;
+      case 'proteinuria': return v && v !== 'Negativa' ? { sev: v === 'Traços' ? 'info' : 'media', msg: `Proteinúria ${v}: leve à equipe, principalmente se a pressão estiver alta ou houver inchaço.` } : v ? { sev: 'ok' } : null;
+      case 'clamidia_gono': return v === 'Detectado' ? { sev: 'media', msg: 'Clamídia/gonorreia detectada: o tratamento é simples e a parceria também deve ser tratada. Procure sua equipe.' } : v ? { sev: 'ok' } : null;
+      case 'plaquetas': if (isNaN(n)) return null; return n < 100 ? { sev: 'alta', msg: `Plaquetas ${n} mil/mm³ (abaixo de 100 mil): mostre à equipe com prioridade.` } : { sev: 'ok' };
       case 'malaria': return v === 'Positivo' ? { sev: 'alta', msg: 'Malária positiva: procure atendimento para tratamento imediato.' } : v ? { sev: 'ok' } : null;
       default: return null;
     }
@@ -218,6 +239,9 @@
     const r = {}; for (const k in Z) r[k] = +(mu + Z[k] * sd).toFixed(1); r.fonte = 'INTERGROWTH-21st'; return r;
   }
   const AU_SEMANAS = [16, 40];
+  /** Curva da altura uterina impressa na Caderneta 2026 (encarte; Assis GP et al., 2021):
+      linha única por mês de gestação, com o peso fetal correspondente. */
+  const AU_CADERNETA = [{ mes: 4, cm: 15, g: 282 }, { mes: 5, cm: 21, g: 483 }, { mes: 6, cm: 25, g: 845 }, { mes: 7, cm: 28, g: 1576 }, { mes: 8, cm: 32, g: 2331 }, { mes: 9, cm: 34, g: 2995 }];
   function classifyAU(...a) { return ptBR(_classifyAU(...a)); }
   function _classifyAU(w, cm) {
     if (w < AU_SEMANAS[0] || w > 42 || !cm) return null; const r = auRef(Math.min(w, 40));
@@ -241,15 +265,25 @@
   };
   function bmi(pesoKg, alturaCm) { const p = +pesoKg, a = +alturaCm / 100; return p && a ? p / (a * a) : null; }
   function bmiCat(imc) { return imc < 18.5 ? 'baixo' : imc < 25 ? 'eutrofia' : imc < 30 ? 'sobrepeso' : 'obesidade'; }
+  /* Faixa recomendada semana a semana (10 a 40), lida dos vetores das curvas
+     oficiais da Caderneta 2026 (págs. 89–92; Kac et al. 2021). Antes de 10 semanas,
+     interpolação linear a partir de 0 kg. Depois de 40, segue a taxa semanal. */
+  const GWG_CURVA = {
+    baixo: { min: [-0.7,-0.3,-0.1,0.2,0.6,0.9,1.2,1.6,2.0,2.4,2.8,3.2,3.6,4.0,4.5,4.9,5.3,5.7,6.0,6.4,6.8,7.1,7.5,7.8,8.1,8.4,8.7,9.0,9.3,9.5,9.7], max: [0.3,0.7,1.0,1.3,1.7,2.0,2.4,2.8,3.2,3.6,4.1,4.5,5.0,5.5,6.0,6.4,6.8,7.3,7.7,8.2,8.6,9.0,9.4,9.8,10.1,10.5,10.8,11.2,11.5,11.9,12.2] },
+    eutrofia: { min: [-2.3,-2.1,-1.9,-1.7,-1.5,-1.3,-1.0,-0.7,-0.3,0.0,0.4,0.8,1.2,1.6,2.0,2.4,2.8,3.1,3.5,3.8,4.2,4.5,4.9,5.2,5.6,6.0,6.4,6.7,7.1,7.5,8.0], max: [0.1,0.3,0.5,0.7,1.0,1.2,1.6,1.9,2.3,2.7,3.2,3.7,4.1,4.6,5.1,5.5,5.9,6.3,6.8,7.2,7.6,8.0,8.4,8.8,9.3,9.7,10.2,10.6,11.1,11.6,12.0] },
+    sobrepeso: { min: [-2.2,-2.0,-1.8,-1.6,-1.3,-1.1,-0.8,-0.5,-0.3,0.0,0.3,0.6,0.8,1.1,1.4,1.7,2.0,2.4,2.7,3.0,3.4,3.7,4.1,4.5,4.8,5.2,5.6,6.0,6.4,6.8,7.0], max: [-1.2,-1.0,-0.7,-0.5,-0.2,0.1,0.4,0.7,0.9,1.2,1.5,1.8,2.1,2.5,2.8,3.1,3.5,3.8,4.2,4.5,4.9,5.2,5.6,6.0,6.4,6.8,7.2,7.7,8.1,8.5,9.0] },
+    obesidade: { min: [-1.7,-1.7,-1.6,-1.6,-1.5,-1.4,-1.3,-1.2,-1.1,-0.9,-0.7,-0.5,-0.3,0.0,0.2,0.5,0.8,1.1,1.4,1.8,2.1,2.4,2.7,3.1,3.4,3.7,4.0,4.4,4.7,5.0,5.0], max: [-0.7,-0.6,-0.5,-0.4,-0.3,-0.1,0.0,0.1,0.3,0.5,0.7,1.0,1.2,1.5,1.8,2.1,2.4,2.8,3.1,3.4,3.8,4.1,4.4,4.8,5.1,5.5,5.8,6.2,6.5,6.9,7.2] },
+  };
   function gwgRange(cat, w) {
-    const P = GWG[cat].pts, k = [[0, [0, 0]], [13, P[13]], [27, P[27]], [40, P[40]]];
-    w = Math.max(0, Math.min(42, w));
-    if (w >= 40) { const ex = w - 40; return [P[40][0] + ex * GWG[cat].taxa, P[40][1] + ex * GWG[cat].taxa]; }
-    for (let i = 1; i < k.length; i++) if (w <= k[i][0]) {
-      const [w0, a] = k[i - 1], [w1, b] = k[i], t = (w - w0) / (w1 - w0);
-      return [+(a[0] + t * (b[0] - a[0])).toFixed(2), +(a[1] + t * (b[1] - a[1])).toFixed(2)];
-    }
+    const C = GWG_CURVA[cat];
+    w = Math.max(0, Math.min(42, +w || 0));
+    if (w >= 40) { const ex = w - 40; return [+(C.min[30] + ex * GWG[cat].taxa).toFixed(2), +(C.max[30] + ex * GWG[cat].taxa).toFixed(2)]; }
+    if (w < 10) { const t = w / 10; return [+(t * C.min[0]).toFixed(2), +(t * C.max[0]).toFixed(2)]; }
+    const i = Math.floor(w) - 10, t = w - Math.floor(w), j = Math.min(30, i + 1);
+    return [+(C.min[i] + t * (C.min[j] - C.min[i])).toFixed(2), +(C.max[i] + t * (C.max[j] - C.max[i])).toFixed(2)];
   }
+  /** Regra da Caderneta para marcar a semana no gráfico: 1–3 dias → semana completa; 4–6 dias → semana seguinte. */
+  function semanaCurva(w, d) { return (+d || 0) >= 4 ? (+w) + 1 : +w; }
   /** idade em anos completos */
   function ageYears(nasc, ref) { if (!nasc) return null; const n = parseDate(nasc), r = ref ? parseDate(ref) : today(); let a = r.getFullYear() - n.getFullYear(); if (r < new Date(r.getFullYear(), n.getMonth(), n.getDate())) a--; return a; }
   function classifyGWG(...a) { return ptBR(_classifyGWG(...a)); }
@@ -263,30 +297,39 @@
 
   /* ---------- Vacinas (Caderneta 2026 / Calendário Nacional PNI) ---------- */
   const VACINAS = [
-    { id: 'dtpa', nome: 'dTpa (difteria, tétano e coqueluche)', desde: 20, doses: 1, quando: 'A partir da 20ª semana, em toda gestação — mesmo que já tenha tomado antes.', porque: 'Protege o bebê contra a coqueluche nos primeiros meses.' },
-    { id: 'dt', nome: 'dT (dupla adulto)', desde: 0, doses: 2, cond: true, quando: 'Se o esquema de tétano estiver incompleto: completa com dT + 1 dose de dTpa a partir de 20 semanas.', porque: 'Previne o tétano na mãe e no recém-nascido.' },
+    { id: 'dtpa', nome: 'dTpa (difteria, tétano e coqueluche)', desde: 20, doses: 1, quando: 'A partir da 20ª semana, em toda gestação — mesmo que já tenha tomado antes.', porque: 'Protege você e o bebê contra tétano, difteria e coqueluche. Mesmo quem tomou em gravidez anterior precisa repetir.' },
+    { id: 'dt', nome: 'dT (dupla adulto)', desde: 0, doses: 2, cond: true, quando: 'Se você tomou apenas 1 dose anterior: 1 dose de dT e 1 dose de dTpa a partir da 20ª semana. A dTpa continua essencial.', porque: 'Previne o tétano na mãe e no recém-nascido.' },
     { id: 'hepb', nome: 'Hepatite B', desde: 0, doses: 3, quando: 'Em qualquer fase, se o esquema estiver incompleto (3 doses: 0, 1 e 6 meses). Se não der tempo, termina até 45 dias após o parto.', porque: 'Reduz o risco de transmissão para o bebê.' },
     { id: 'influenza', nome: 'Influenza (gripe)', desde: 0, doses: 1, quando: '1 dose por temporada, em qualquer trimestre (ou até 45 dias após o parto).', porque: 'Gestantes têm mais risco de complicações da gripe.' },
     { id: 'covid', nome: 'COVID-19', desde: 0, doses: 1, quando: '1 dose por gestação, pelo menos 6 meses após a última dose, conforme orientação vigente.', porque: 'Protege a mãe e transfere anticorpos ao bebê.' },
-    { id: 'vsr', nome: 'VSR (vírus sincicial respiratório)', desde: 28, doses: 1, quando: 'Dose única a partir da 28ª semana, em cada gestação. Disponível no SUS.', porque: 'Protege o bebê contra bronquiolite nos primeiros meses de vida.' },
-    { id: 'febre_amarela', nome: 'Febre amarela', desde: 0, doses: 1, cond: true, quando: 'Só para quem mora ou vai para área de risco, com avaliação individual.', porque: 'Normalmente é adiada para depois do parto.' },
+    { id: 'vsr', nome: 'VSR (vírus sincicial respiratório)', desde: 28, doses: 1, quando: 'Dose única a partir da 28ª semana, em cada gestação. Disponível no SUS.', porque: 'Protege o bebê contra bronquiolite e pneumonia nos primeiros meses. Se o bebê nascer prematuro, recebe o nirsevimabe na maternidade (SUS).' },
+    { id: 'febre_amarela', nome: 'Febre amarela', desde: 0, doses: 1, cond: true, quando: 'Só para quem mora ou vai para área de risco, com avaliação individual.', porque: 'Avaliação individual do serviço de saúde.' },
+    { id: 'raiva', nome: 'Raiva — pré-exposição', desde: 0, doses: 1, cond: true, quando: 'Apenas para grupos específicos, orientados pela equipe (situações específicas).', porque: 'Proteção em áreas com risco aumentado de raiva. Consulte a UBS.' },
   ];
 
-  /* ---------- Sinais de perigo (Caderneta 2026, seção 2.6) ---------- */
+  /* ---------- Sinais de alerta (Caderneta 2026, seção 2.6 — 16 itens, na ordem oficial)
+     + 2 complementares marcados com "extra": perda de líquido (seção do trabalho de
+     parto: "se houver dúvida sobre a ruptura da bolsa, procure um serviço de saúde")
+     e sinais emocionais (seção 6.8.4). ---------- */
   const SINAIS_PERIGO = [
-    { id: 'sangramento', ic: '🩸', t: 'Sangramento vaginal', s: 'Qualquer sangramento pela vagina.' },
-    { id: 'liquido', ic: '💧', t: 'Perda de líquido pela vagina', s: 'Pode ser a bolsa rota.' },
-    { id: 'pa', ic: '🩺', t: 'Pressão alta', s: 'Acima do seu habitual ou acima de 14 por 9 (140/90).' },
-    { id: 'cefaleia', ic: '🤕', t: 'Dor de cabeça forte ou que não passa', s: 'Principalmente se vier com alteração da visão.' },
-    { id: 'visao', ic: '👁️', t: 'Alterações na visão', s: 'Visão embaçada, sensibilidade à luz, pontos brilhantes, manchas ou perda de visão.' },
-    { id: 'epigastrio', ic: '🔥', t: 'Dor forte na “boca do estômago”', s: 'Na parte de cima da barriga, abaixo do meio dos seios.' },
-    { id: 'abdome', ic: '😣', t: 'Dor forte ou persistente na barriga', s: 'Ou contrações regulares antes de 37 semanas.' },
-    { id: 'febre', ic: '🌡️', t: 'Febre acima de 37,8 °C', s: 'Medida fora da axila — ou ardência para urinar com febre.' },
+    { id: 'pa', ic: '🩺', t: 'Pressão mais alta que o habitual', s: 'Ou mais alta que 140 x 90 mmHg (14 por 9).' },
+    { id: 'sangramento', ic: '🩸', t: 'Sangramento vaginal', s: '' },
+    { id: 'abdome', ic: '😣', t: 'Dor abdominal forte ou persistente', s: '' },
+    { id: 'febre', ic: '🌡️', t: 'Febre', s: 'Temperatura maior ou igual a 37,8 °C.' },
+    { id: 'cefaleia', ic: '🤕', t: 'Dor de cabeça intensa ou que não melhora', s: '' },
+    { id: 'visao', ic: '👁️', t: 'Alterações na visão', s: 'Visão turva, sensibilidade à luz, flashes, pontos cegos ou perda de visão.' },
+    { id: 'epigastrio', ic: '🔥', t: 'Dor forte na região do estômago', s: 'Logo abaixo da linha entre as mamas.' },
+    { id: 'urina', ic: '🚻', t: 'Dor ou ardência ao urinar', s: '' },
     { id: 'inchaco', ic: '🖐️', t: 'Inchaço repentino', s: 'No rosto, nas mãos ou nas pernas.' },
-    { id: 'movimento', ic: '👶', t: 'Bebê mexendo menos ou parou', s: 'Especialmente mais de 4 horas sem mexer, após 20 semanas.' },
-    { id: 'falta_ar', ic: '🫁', t: 'Falta de ar ou dor forte no peito', s: '' },
-    { id: 'convulsao', ic: '⚡', t: 'Convulsão, desmaio ou mal-estar intenso', s: '' },
-    { id: 'mental', ic: '💜', t: 'Tristeza profunda ou pensamentos de se machucar', s: 'Você não está sozinha: peça ajuda. CVV 188 (24 h).' },
+    { id: 'movimento', ic: '👶', t: 'Bebê mexendo menos ou sem mexer', s: 'Especialmente se ficar mais de 4 horas sem se mexer após as 20 semanas.' },
+    { id: 'pele', ic: '🔴', t: 'Manchas vermelhas na pele ou vermelhidão nos olhos', s: '' },
+    { id: 'malestar', ic: '😵', t: 'Mal-estar intenso', s: 'Ou sensação de que algo não está bem.' },
+    { id: 'peito', ic: '💔', t: 'Dor forte no peito', s: '' },
+    { id: 'falta_ar', ic: '🫁', t: 'Falta de ar', s: '' },
+    { id: 'convulsao', ic: '⚡', t: 'Convulsões', s: '' },
+    { id: 'desmaio', ic: '🌀', t: 'Desmaio', s: '' },
+    { id: 'liquido', ic: '💧', t: 'Perda de líquido pela vagina', s: 'Pode ser a bolsa rompida. Na dúvida, procure um serviço de saúde. Líquido verde ou amarelo exige avaliação.', extra: true },
+    { id: 'mental', ic: '💜', t: 'Tristeza intensa, desespero ou pensamentos de se machucar', s: 'Sinais de alerta emocionais (Caderneta, 6.8.4). Pedir ajuda é um direito. CVV 188 (24 h).', extra: true },
   ];
 
   /* ---------- Conteúdo por trimestre (Jornada) ---------- */
@@ -304,8 +347,8 @@
 
   g.Clin = {
     parseDate, toISODate, today, addDays, diffDays, gaFrom, gaStart, compareDUMxUSG, validateGestation, redatingLimit,
-    startFromUSG, startFromDUM, startFromDPP, trimester, CONSULTAS, intervaloConsulta, EXAMES, EXAME, interpretExam,
-    PA, classifyBP, parseBP, GLI_MOMENTOS, classifyGlucose, BCF, FEBRE, MOV, auRef, AU_SEMANAS, classifyAU,
-    GWG, bmi, bmiCat, gwgRange, classifyGWG, ageYears, VACINAS, SINAIS_PERIGO, TRIMESTRES,
+    startFromUSG, startFromDUM, startFromDPP, trimester, CONSULTAS, intervaloConsulta, EXAMES, EXAME, EXAMES_PARTO, interpretExam,
+    PA, classifyBP, parseBP, GLI_MOMENTOS, classifyGlucose, BCF, FEBRE, MOV, auRef, AU_SEMANAS, AU_CADERNETA, classifyAU,
+    GWG, GWG_CURVA, bmi, bmiCat, gwgRange, semanaCurva, classifyGWG, ageYears, VACINAS, SINAIS_PERIGO, TRIMESTRES,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

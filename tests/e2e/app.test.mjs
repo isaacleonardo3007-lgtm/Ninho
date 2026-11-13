@@ -264,14 +264,15 @@ rec('6 movimentos em 2 h → URGENTE', /Bebê mexendo menos/.test(await homeTxt(
 rec('30 sem sem VSR → lembrete da vacina VSR', /Vacina VSR/.test(await homeTxt(page)));
 
 /* ================= 10. Sinais de perigo ================= */
-area = 'Sinais de perigo';
+area = 'Sinais de alerta';
 await page.click('text=Estou sentindo algo diferente');
 await page.check('.dg[value="sangramento"]'); await page.click('text=Ver o que fazer');
 rec('Check de sinais → tela de urgência com 192', await page.isVisible('.modal a[href="tel:192"]'));
 await shot(page, '08-sinais-perigo');
 await page.evaluate(() => closeModal());
 await page.evaluate(() => go('help'));
-rec('Lista da Caderneta inclui visão, epigástrio e febre 37,8', /Alterações na visão/.test(await page.textContent('#pg-help')) && /boca do estômago/.test(await page.textContent('#pg-help')) && /37,8/.test(await page.textContent('#pg-help')));
+rec('Lista da Caderneta inclui visão, epigástrio e febre 37,8', /Alterações na visão/.test(await page.textContent('#pg-help')) && /região do estômago/.test(await page.textContent('#pg-help')) && /37,8/.test(await page.textContent('#pg-help')));
+rec('Lista tem os 16 sinais da seção 2.6 (ardência ao urinar, manchas, desmaio)', await page.evaluate(() => C.SINAIS_PERIGO.filter(s => !s.extra).length === 16) && /ardência ao urinar/.test(await page.textContent('#pg-help')) && /Desmaio/.test(await page.textContent('#pg-help')));
 
 /* ================= 11. Notificações ================= */
 area = 'Notificações';

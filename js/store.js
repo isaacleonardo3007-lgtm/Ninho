@@ -84,6 +84,7 @@
     if (/email not confirmed/i.test(m)) return 'Confirme seu e-mail pelo link que enviamos antes de entrar.';
     if (/already registered|already exists/i.test(m)) return 'Já existe uma conta com este e-mail. Tente entrar ou recuperar a senha.';
     if (/password.*(6|8|short|weak)/i.test(m)) return 'A senha precisa ter pelo menos 8 caracteres, com letras e números.';
+    if (/sending (confirmation|recovery|magic link)? ?email|error sending/i.test(m)) return 'Não conseguimos enviar o e-mail agora. Tente de novo em alguns minutos; se continuar, fale com o suporte do Ninho.';
     if (/rate limit|too many/i.test(m)) return 'Muitas tentativas. Aguarde alguns minutos e tente de novo.';
     if (/fetch|network/i.test(m)) return 'Sem conexão com o servidor. Verifique sua internet.';
     return m || 'Não foi possível concluir. Tente novamente.';

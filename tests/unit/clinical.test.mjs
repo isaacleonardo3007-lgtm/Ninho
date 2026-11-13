@@ -24,4 +24,11 @@ t('Hb', ()=>{ assert.equal(C.interpretExam('hb','9,5').sev,'media'); assert.equa
 t('Glicemia jejum 92 DMG', ()=>{ assert.equal(C.interpretExam('glicemia_jejum',92).sev,'media'); assert.equal(C.interpretExam('glicemia_jejum',126).sev,'alta');});
 t('Idade', ()=>{ assert.equal(C.ageYears(C.addDays(T,-365*17-10)),17);});
 t('Trimestre', ()=>{ assert.equal(C.trimester(13),1); assert.equal(C.trimester(14),2); assert.equal(C.trimester(28),3);});
+t('GWG usa curva oficial semana a semana (eutrofia 20s = 0,4–3,2)', ()=>{ assert.deepEqual([...C.gwgRange('eutrofia',20)],[0.4,3.2]);});
+t('GWG obesidade 40s = 5–7,2 e sobrepeso 13s', ()=>{ assert.deepEqual([...C.gwgRange('obesidade',40)],[5,7.2]); assert.deepEqual([...C.gwgRange('sobrepeso',13)],[-1.6,-0.5]);});
+t('Regra da semana: 1–3 dias = semana completa; 4–6 = seguinte', ()=>{ assert.equal(C.semanaCurva(20,3),20); assert.equal(C.semanaCurva(20,4),21);});
+t('Sinais de alerta: 16 itens oficiais', ()=>{ assert.equal(C.SINAIS_PERIGO.filter(s=>!s.extra).length,16);});
+t('Exames da Caderneta: teste de gravidez, indicação clínica, alto risco, parto', ()=>{ ['teste_gravidez','tuberculose','proteinuria','clamidia_gono','colo_utero','parasitologico','secrecao_vaginal','plaquetas','doppler','ctg'].forEach(id=>assert.ok(C.EXAME[id],id)); assert.equal(C.EXAMES_PARTO.length,4);});
+t('Vacina raiva pré-exposição', ()=>{ assert.ok(C.VACINAS.find(v=>v.id==='raiva'));});
+t('Curva AU da Caderneta (mês 4..9)', ()=>{ assert.deepEqual(C.AU_CADERNETA.map(r=>r.cm),[15,21,25,28,32,34]);});
 console.log(n,'testes unitários OK');

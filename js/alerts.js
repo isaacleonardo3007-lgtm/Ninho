@@ -36,11 +36,11 @@
       if (cl === 'grave' || (cl === 'alta' && temSintomaPE)) a.push({
         id: 'pa-urgente', sev: 'urgente', ic: '🩺', titulo: cl === 'grave' ? 'Pressão muito alta' : 'Pressão alta com sintomas',
         msg: `Sua última medida foi ${pa.s}/${pa.d} mmHg${cl === 'alta' ? ' e você registrou sintomas como dor de cabeça, visão alterada ou inchaço' : ''}. Isso pode ser pré-eclâmpsia: procure a maternidade agora.`,
-        acts: [['Ligar 192', 'call192', 'pri'], ['Sinais de perigo', 'go:help']], fonte: 'Caderneta da Gestante 2026 — ≥ 160/110 é situação de urgência' });
+        acts: [['Ligar 192', 'call192', 'pri'], ['Sinais de alerta', 'go:help']], fonte: 'Caderneta da Gestante 2026 — ≥ 160/110 é situação de urgência' });
       else if (cl === 'alta') a.push({
         id: 'pa-alta', sev: 'atencao', ic: '🩺', titulo: 'Pressão acima de 140/90',
         msg: `Medida de ${pa.s}/${pa.d} mmHg (${pa.origem === 'casa' ? 'em casa' : 'na consulta'}). Repita após 15 minutos sentada e em repouso. Se continuar alta, fale com sua equipe hoje. Se tiver dor de cabeça forte, alteração da visão ou dor no estômago, vá à maternidade.`,
-        acts: [['Anotar p/ consulta', 'note:Pressão ' + pa.s + '/' + pa.d], ['Sinais de perigo', 'go:help']], fonte: 'Caderneta da Gestante 2026' });
+        acts: [['Anotar p/ consulta', 'note:Pressão ' + pa.s + '/' + pa.d], ['Sinais de alerta', 'go:help']], fonte: 'Caderneta da Gestante 2026' });
     }
 
     /* ---------- Movimentos do bebê ---------- */
@@ -49,11 +49,11 @@
       if (k && recente(k.inicio, 24) && k.contagem < C.MOV.alvo && k.duracao_min < C.MOV.minutos) a.push({
         id: 'mov-incompleta', sev: 'atencao', ic: '👶', titulo: 'Contagem com poucos movimentos',
         msg: `A última contagem parou com ${k.contagem} movimento(s) em ${k.duracao_min} min. Faça uma contagem completa (até sentir ${C.MOV.alvo} ou por 2 horas). Se você sente que o bebê está mexendo menos que o normal, não espere: procure a maternidade.`,
-        acts: [['Contar de novo', 'kick'], ['Ligar 192', 'call192']], fonte: 'Caderneta da Gestante 2026 — sinais de perigo' });
+        acts: [['Contar de novo', 'kick'], ['Ligar 192', 'call192']], fonte: 'Caderneta da Gestante 2026 — sinais de alerta' });
       else if (k && recente(k.inicio, 24) && k.contagem < C.MOV.alvo) a.push({
         id: 'mov-baixo', sev: 'urgente', ic: '👶', titulo: 'Bebê mexendo menos',
         msg: `Na última contagem foram ${k.contagem} movimentos em ${k.duracao_min} min (o esperado é sentir ${C.MOV.alvo} em até 2 horas). Movimento diminuído é sinal de alerta: procure a maternidade hoje, sem esperar a próxima consulta.`,
-        acts: [['Ligar 192', 'call192', 'pri'], ['Contar de novo', 'kick']], fonte: 'Caderneta da Gestante 2026 — sinais de perigo' });
+        acts: [['Ligar 192', 'call192', 'pri'], ['Contar de novo', 'kick']], fonte: 'Caderneta da Gestante 2026 — sinais de alerta' });
       else if (!k || !recente(k.inicio, 48)) a.push({
         id: 'mov-contar', sev: 'info', ic: '👶', titulo: 'Conte os movimentos hoje',
         msg: 'A partir de 28 semanas, reserve um momento por dia, deitada de lado, para perceber os movimentos do bebê. Se notar que ele está mexendo menos, procure atendimento.',
@@ -72,9 +72,9 @@
       if (r && r.sev !== 'ok') a.push({ id: 'au', sev: 'atencao', ic: '📏', titulo: `Altura uterina ${r.pos} da curva`, msg: r.msg, acts: [['Ver curva', 'go:record:curvas']], fonte: 'Curva de altura uterina (P10–P90)' });
     }
     if (ult && (ult.edema === '++' || ult.edema === '+++') && recente(ult.data + 'T12:00:00', 14 * 24)) a.push({
-      id: 'edema', sev: 'atencao', ic: '🖐️', titulo: 'Inchaço importante', msg: 'Foi registrado edema ++ ou mais. Inchaço que aparece de repente no rosto ou nas mãos é sinal de perigo — procure atendimento.', acts: [['Sinais de perigo', 'go:help']] });
+      id: 'edema', sev: 'atencao', ic: '🖐️', titulo: 'Inchaço importante', msg: 'Foi registrado edema ++ ou mais. Inchaço que aparece de repente no rosto ou nas mãos é sinal de perigo — procure atendimento.', acts: [['Sinais de alerta', 'go:help']] });
     if (ult && ult.perdas_vaginais && recente(ult.data + 'T12:00:00', 3 * 24)) a.push({
-      id: 'perdas', sev: 'atencao', ic: '💧', titulo: 'Perdas pela vagina', msg: 'Sangramento ou perda de líquido são sinais de perigo. Se estiver acontecendo agora, procure a maternidade.', acts: [['Ligar 192', 'call192', 'pri']] });
+      id: 'perdas', sev: 'atencao', ic: '💧', titulo: 'Perdas pela vagina', msg: 'Sangramento ou perda de líquido são sinais de alerta. Se estiver acontecendo agora, procure a maternidade.', acts: [['Ligar 192', 'call192', 'pri']] });
 
     /* ---------- Ganho de peso (curva da Caderneta) ---------- */
     if (gest.peso_pre_kg && gest.altura_cm) {
@@ -84,7 +84,7 @@
       if (pesos[0]) {
         const ig = igAt(pesos[0].d), cat = C.bmiCat(C.bmi(gest.peso_pre_kg, gest.altura_cm));
         const idade = C.ageYears(profile.data_nascimento);
-        const r = C.classifyGWG(cat, ig.w, pesos[0].p - gest.peso_pre_kg, { adolescente: idade != null && idade < 19, gemelar: gest.tipo_gravidez && gest.tipo_gravidez !== 'unica' });
+        const r = C.classifyGWG(cat, C.semanaCurva(ig.w, ig.d), pesos[0].p - gest.peso_pre_kg, { adolescente: idade != null && idade < 19, gemelar: gest.tipo_gravidez && gest.tipo_gravidez !== 'unica' });
         if (r.sev === 'media') a.push({ id: 'gwg-' + r.pos, sev: 'atencao', ic: '⚖️', titulo: `Ganho de peso ${r.pos} da faixa`, msg: r.msg, acts: [['Ver curva', 'go:record:curvas']], fonte: 'Caderneta 2026 / Kac et al. 2021' });
       }
     }
@@ -98,10 +98,10 @@
       else if (fora.length >= 2) a.push({ id: 'gli-meta', sev: 'atencao', ic: '🩸', titulo: 'Glicemias acima da meta', msg: `${fora.length} das suas medições dos últimos 7 dias ficaram acima da meta (jejum < 95, 1 h após < 140, 2 h após < 120 mg/dL). Mostre esse diário à sua equipe.`, acts: [['Ver diário', 'go:record:casa'], ['Anotar p/ consulta', 'note:Glicemias acima da meta']], fonte: 'Metas para diabetes na gestação (SBD/MS)' });
       else if (fora.length === 1 && gl[0] && C.classifyGlucose(gl[0].valor, gl[0].momento).sev !== 'ok') a.push({ id: 'gli-1', sev: 'info', ic: '🩸', titulo: 'Uma glicemia acima da meta', msg: fora[0].msg + ' Continue medindo nos horários combinados.', acts: [['Ver diário', 'go:record:casa']] });
       const temp = list('medicoes').filter(m => m.tipo === 'temperatura' && recente(m.medido_em, 24)).sort(byDateDesc)[0];
-      if (temp && +temp.valor > C.FEBRE) a.push({ id: 'febre', sev: 'urgente', ic: '🌡️', titulo: 'Febre', msg: `Temperatura de ${temp.valor} °C (acima de 37,8 °C) é sinal de perigo na gestação. Procure atendimento.`, acts: [['Ligar 192', 'call192', 'pri']], fonte: 'Caderneta da Gestante 2026' });
+      if (temp && +temp.valor >= C.FEBRE) a.push({ id: 'febre', sev: 'urgente', ic: '🌡️', titulo: 'Febre', msg: `Temperatura de ${temp.valor} °C (acima de 37,8 °C) é sinal de perigo na gestação. Procure atendimento.`, acts: [['Ligar 192', 'call192', 'pri']], fonte: 'Caderneta da Gestante 2026' });
       // sintomas fortes isolados
       sintomasRecentes.filter(s => s.intensidade >= 3 && SINT_PE.includes(s.nome)).slice(0, 1).forEach(s => {
-        if (!a.some(x => x.id === 'pa-urgente')) a.push({ id: 'sint-' + s.nome, sev: 'atencao', ic: s.emoji || '📝', titulo: `${s.nome} forte`, msg: `${s.nome} forte pode estar ligada à pressão. Meça a pressão se puder; se vier com alteração da visão, dor no estômago ou inchaço repentino, procure a maternidade.`, acts: [['Sinais de perigo', 'go:help']] });
+        if (!a.some(x => x.id === 'pa-urgente')) a.push({ id: 'sint-' + s.nome, sev: 'atencao', ic: s.emoji || '📝', titulo: `${s.nome} forte`, msg: `${s.nome} forte pode estar ligada à pressão. Meça a pressão se puder; se vier com alteração da visão, dor no estômago ou inchaço repentino, procure a maternidade.`, acts: [['Sinais de alerta', 'go:help']] });
       });
       // exames: resultado mais recente de cada código
       const ex = {}; list('exames').forEach(e => { if (!ex[e.codigo] || e.data > ex[e.codigo].data) ex[e.codigo] = e; });
@@ -146,8 +146,11 @@
     const rhNeg = /-$/.test(profile.tipo_sanguineo || '');
     const igg = list('exames').filter(e => e.codigo === 'toxo_igg').sort((a, b) => b.data.localeCompare(a.data))[0];
     const imune = igg && igg.valor_txt === 'Reagente';   // já teve contato: não repete no 2º/3º tri
+    const coombs1 = list('exames').filter(e => e.codigo === 'coombs' && C.trimester(C.gaFrom(gest, e.data).w) === 1)[0];
+    const coombsPos = coombs1 && coombs1.valor_txt === 'Positivo';   // positivo: segue com a equipe especializada, não é rastreio
     return C.EXAMES.filter(e => e.tri.includes(tri) && !feitos.has(e.id) && (!e.cond || (e.cond === 'rh_neg' && rhNeg)) && e.id !== 'outro')
       .filter(e => !(imune && tri > 1 && /^toxo_/.test(e.id)))
+      .filter(e => !(coombsPos && tri > 1 && e.id === 'coombs') && e.id !== 'teste_gravidez')
       .filter(e => !e.janela || (w >= e.janela[0] - 1 && w <= e.janela[1]))
       .filter(e => !(e.grupo === 'totg' && e.id !== 'totg_0'))
       .map(e => ({ ...e, nome: e.grupo === 'totg' ? 'TOTG 75 g (curva glicêmica)' : e.nome }));

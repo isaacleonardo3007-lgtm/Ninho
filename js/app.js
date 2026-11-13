@@ -507,7 +507,7 @@ function dangerResult() {
   if (!ids.length) { closeModal(); toast('Nenhum sinal marcado. Se algo te preocupa, ligue para sua UBS ou maternidade 💜'); return; }
   const p = S().profile, so = ids.length === 1 && ids[0] === 'mental';
   openModal('Procure atendimento', `<div class="alert urgente"><div class="ai">🚨</div><div><b class="t">${so ? 'Você merece ajuda agora' : 'Procure atendimento agora'}</b>
-    <p>${so ? 'Ligue para o CVV (188, 24 h, gratuito) ou procure a UBS. Se estiver em risco imediato, ligue 192.' : 'Os sinais que você marcou são sinais de perigo na gestação segundo a Caderneta. Vá à maternidade de referência ou ligue para o SAMU.'}</p></div></div>
+    <p>${so ? 'Ligue para o CVV (188, 24 h, gratuito) ou procure a UBS. Se estiver em risco imediato, ligue 192.' : 'Os sinais que você marcou são sinais de alerta na gestação segundo a Caderneta. Vá à maternidade de referência ou ligue para o SAMU.'}</p></div></div>
     ${so ? '<a class="btn full" style="display:block;text-align:center;text-decoration:none;margin-bottom:8px" href="tel:188">📞 Ligar 188 (CVV)</a>' : ''}
     <a class="btn full" style="display:block;text-align:center;text-decoration:none;background:var(--bad)" href="tel:192">📞 Ligar 192 (SAMU)</a>
     ${p.contato_emergencia_tel ? `<a class="btn sec full" style="display:block;text-align:center;text-decoration:none;margin-top:8px" href="tel:${esc(p.contato_emergencia_tel)}">📞 ${esc(p.contato_emergencia_nome || 'Contato de emergência')}</a>` : ''}
@@ -523,7 +523,7 @@ function renderTimeline() {
     <p class="muted" style="margin:-6px 0 14px;font-size:13.5px">Exames e cuidados de cada fase, como na Caderneta Brasileira da Gestante. Você está com ${g.w} ${plural(g.w, 'semana', 'semanas')}.</p>`;
   C.TRIMESTRES.forEach(t => {
     const active = t.tri === tri, past = t.tri < tri;
-    const ex = C.EXAMES.filter(e => e.tri.includes(t.tri) && (!e.cond || (e.cond === 'rh_neg' && rhNeg)) && !(e.grupo === 'totg' && e.id !== 'totg_0') && e.id !== 'ht');
+    const ex = C.EXAMES.filter(e => e.tri.includes(t.tri) && (!e.cond || (e.cond === 'rh_neg' && rhNeg) || (e.cond === 'indicacao' && e.tri.length)) && !(e.grupo === 'totg' && e.id !== 'totg_0') && e.id !== 'ht');
     const exNome = e => e.grupo === 'totg' ? 'TOTG 75 g (24–28 semanas)' : e.id === 'hb' ? 'Hemograma (hemoglobina e hematócrito)' : e.nome;
     h += `<details class="card tri" ${active ? 'open' : ''} style="${active ? 'border:2px solid var(--violet)' : ''}">
       <summary style="display:flex;align-items:center;gap:10px;list-style:none;cursor:pointer"><div style="font-size:28px">${t.emoji}</div>
@@ -532,9 +532,13 @@ function renderTimeline() {
       <b style="font-size:13px">🔬 Exames da Caderneta nesta fase</b>
       <div style="margin:4px 0 10px">${ex.map(e => { const f = feitos[t.tri] && (feitos[t.tri].has(e.id) || (e.grupo === 'totg' && feitos[t.tri].has('totg_2h'))); return `<div class="exrow"><span class="dot ${plus ? (f ? 'ok' : (past ? 'w' : '')) : ''}"></span><div class="en">${esc(exNome(e))}${e.nota ? `<span>${esc(e.nota)}</span>` : ''}</div>${plus && active && !f ? `<button class="btn sec sm" onclick="modalExame(null,'${e.id}')">Registrar</button>` : ''}</div>`; }).join('')}</div>
       ${!plus && active ? `<div class="lock-inline"><div class="li-t"><b>Registre os resultados ${plusTag()}</b><span>Com o Ninho+ você guarda os resultados, vê gráficos e recebe alertas de valores fora do esperado.</span></div><button class="btn sm" onclick="modalPremium()">Ver</button></div>` : ''}
-      <b style="font-size:13px">🩺 Consultas</b><p class="muted" style="font-size:13px;margin:4px 0 10px">${t.tri === 1 ? 'Comece até a 12ª semana. Consultas mensais.' : t.tri === 2 ? 'Mensais até 28 semanas.' : 'A cada 15 dias de 28 a 36 semanas e semanais a partir de 37. Não existe “alta” do pré-natal.'}</p>
+      ${t.tri === 3 ? `<b style="font-size:13px">🏥 No parto ou logo após</b><p class="muted" style="font-size:13px;margin:4px 0 10px">${C.EXAMES_PARTO.join(' · ')}.</p>` : ''}
+      <b style="font-size:13px">🩺 Consultas</b><p class="muted" style="font-size:13px;margin:4px 0 10px">${t.tri === 1 ? 'Comece até a 12ª semana. Consultas mensais.' : t.tri === 2 ? 'Mensais até 28 semanas.' : 'A cada 15 dias da 28ª à 36ª semana e semanais a partir da 36ª. Não existe “alta” do pré-natal.'}</p>
       <b style="font-size:13px">🌿 Dicas</b><ul style="margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--muted);line-height:1.6">${t.tips.map(x => `<li>${x}</li>`).join('')}</ul></details>`;
   });
+  h += `<details class="card tri"><summary style="list-style:none;cursor:pointer"><b>🔎 Exames com indicação clínica e de alto risco</b><br><span class="muted" style="font-size:12px">Não são rotina para todas — a equipe pede quando precisa · toque para ver</span></summary>
+    <p style="font-size:13px;margin:8px 0 4px"><b>Com indicação clínica</b></p><ul style="margin:0;padding-left:18px;font-size:13px;color:var(--muted);line-height:1.6">${C.EXAMES.filter(e => e.cond === 'indicacao' && e.id !== 'outro' && !e.tri.length).map(e => `<li>${esc(e.nome.replace(' (se indicado)', ''))}</li>`).join('')}</ul>
+    <p style="font-size:13px;margin:8px 0 4px"><b>Pré-natal de alto risco</b> (conforme critério clínico)</p><ul style="margin:0;padding-left:18px;font-size:13px;color:var(--muted);line-height:1.6">${C.EXAMES.filter(e => e.cond === 'alto_risco').map(e => `<li>${esc(e.nome)}</li>`).join('')}</ul></details>`;
   const nCons = L('consultas').length;
   h += `<div class="card" style="background:var(--grad-soft)"><b>📋 Consultas registradas: ${nCons} de no mínimo ${C.CONSULTAS.minimo}</b><div class="progbar" style="background:var(--line);margin-top:8px"><i style="width:${Math.min(100, nCons / C.CONSULTAS.minimo * 100)}%;background:var(--grad)"></i></div></div>`;
   h += `<div class="section-t"><i class="ph ph-syringe"></i> Vacinas da gestante (SUS)</div>`;
@@ -601,7 +605,7 @@ function recConsultas() {
         <div><h3 style="margin:0">${fmt(c.data)} · ${ig.w}s${ig.d}d</h3><span class="muted" style="font-size:12.5px">${esc([c.local, c.profissional].filter(Boolean).join(' · ') || 'Consulta de pré-natal')}</span></div>
         <div style="display:flex;gap:4px"><button class="x" style="font-size:18px" aria-label="Editar consulta" onclick="modalConsulta('${c.id}')">✏️</button><button class="x" style="font-size:18px" aria-label="Excluir consulta" onclick="confirmBox('Excluir esta consulta?',()=>{Store.remove('consultas','${c.id}');renderRecBody()},{danger:true,yes:'Excluir'})">🗑️</button></div></div>
         <div class="vital-grid" style="margin-top:10px">
-          ${vbox('PA', c.pa_sis ? `${c.pa_sis}/${c.pa_dia}` : '', 'mmHg', bp === 'grave' || bp === 'alta' ? 'b' : '')}${vbox('Peso', c.peso_kg, 'kg')}
+          ${vbox('PA', c.pa_sis ? `${c.pa_sis}/${c.pa_dia}` : '', 'mmHg', bp === 'grave' || bp === 'alta' ? 'b' : '')}${vbox('Peso', c.peso_kg, 'kg')}${S().gestacao.altura_cm && c.peso_kg ? vbox('IMC', C.bmi(c.peso_kg, S().gestacao.altura_cm).toFixed(1).replace('.', ','), 'kg/m²') : ''}
           ${vbox('Altura uterina', c.altura_uterina_cm, 'cm', au && au.sev !== 'ok' ? 'w' : '')}${vbox('BCF', c.bcf_bpm, 'bpm', c.bcf_bpm && (c.bcf_bpm < C.BCF[0] || c.bcf_bpm > C.BCF[1]) ? 'w' : '')}</div>
         <div style="font-size:12.5px;margin-top:8px;line-height:1.7" class="muted">${[c.movimentos_fetais && 'Mov. fetais: ' + lbl(MOV_OPT, c.movimentos_fetais), c.apresentacao && 'Apresentação: ' + lbl(APR_OPT, c.apresentacao), c.edema && 'Edema: ' + lbl(EDE_OPT, c.edema), c.queixas_urinarias != null && 'Queixas urinárias: ' + (c.queixas_urinarias ? 'sim' : 'não'), c.perdas_vaginais != null && 'Perdas vaginais: ' + (c.perdas_vaginais ? 'sim' : 'não')].filter(Boolean).join(' · ')}</div>
         ${c.observacoes ? `<div style="margin-top:10px;background:var(--grad-soft);padding:11px;border-radius:13px;font-size:13.5px;line-height:1.5"><b style="font-size:12px;color:var(--violet)">🩺 Observações e conduta</b><br>${esc(c.observacoes)}</div>` : ''}
@@ -660,23 +664,25 @@ function recCurvas() {
   const gest = S().gestacao, P = curvaPontos();
   const imc = C.bmi(gest.peso_pre_kg, gest.altura_cm), cat = imc ? C.bmiCat(imc) : null, idade = C.ageYears(S().profile.data_nascimento);
   const lastAU = P.au[P.au.length - 1], auR = lastAU ? C.classifyAU(Math.floor(lastAU.x), lastAU.y) : null;
-  const lastG = P.gw[P.gw.length - 1], gR = lastG && cat ? C.classifyGWG(cat, Math.floor(lastG.x), lastG.y, { adolescente: idade != null && idade < 19, gemelar: gest.tipo_gravidez !== 'unica' }) : null;
+  const lastG = P.gw[P.gw.length - 1], gR = lastG && cat ? C.classifyGWG(cat, C.semanaCurva(Math.floor(lastG.x), Math.round((lastG.x - Math.floor(lastG.x)) * 7)), lastG.y, { adolescente: idade != null && idade < 19, gemelar: gest.tipo_gravidez !== 'unica' }) : null;
   const pill = r => !r ? '' : r.pos === 'dentro' ? '<span class="pill g">Dentro da faixa</span>' : r.pos === 'individual' ? '<span class="pill v">Orientação individual</span>' : `<span class="pill w">${r.pos === 'acima' ? 'Acima' : 'Abaixo'} da faixa</span>`;
   return `<p class="muted" style="font-size:13px;margin:2px 2px 12px">As mesmas curvas da Caderneta da Gestante. A faixa colorida é o esperado; seus pontos vêm das consultas registradas.</p>
     <div class="card"><h3>📏 Altura uterina ${pill(auR)}</h3>
-      <span class="muted" style="font-size:12px">Percentis 10 a 90 por idade gestacional (16 a 40 semanas).</span>
+      <span class="muted" style="font-size:12px">Faixa esperada (percentis 10 a 90) por idade gestacional, de 16 a 40 semanas.</span>
       <canvas id="g-au" height="220" style="margin-top:10px" role="img" aria-label="Gráfico de altura uterina por idade gestacional"></canvas>
       <div class="legend"><span><i style="background:rgba(162,106,134,.25)"></i>P10–P90</span><span><i style="background:rgba(162,106,134,.7);height:2px"></i>P50</span><span><i style="background:#6a4664"></i>Você</span></div>
       ${auR && auR.msg ? `<p style="font-size:13px;margin:10px 0 0">${esc(auR.msg)}</p>` : ''}
       ${!P.au.length ? '<p class="muted" style="font-size:12.5px;text-align:center;margin:8px 0 0">Registre a <b>altura uterina</b> nas consultas para ver seus pontos.</p>' : ''}
-      <p class="muted" style="font-size:11px;margin:10px 0 0">Referência: ${esc(C.auRef(30).fonte)}${C.auRef(30).fonte !== 'Caderneta 2026' ? ' — mesma metodologia (P10–P90) da curva da Caderneta 2026 (Assis et al., 2021), cujos valores numéricos ainda não foram publicados em formato aberto.' : '.'}</p></div>
+      <details style="margin-top:10px"><summary class="muted" style="font-size:12.5px;cursor:pointer">📘 Curva da Caderneta 2026 (por mês de gestação)</summary>
+        <table style="width:100%;font-size:12.5px;margin-top:6px;border-collapse:collapse"><tr class="muted"><td>Mês</td>${C.AU_CADERNETA.map(r => `<td style="text-align:center">${r.mes}º</td>`).join('')}</tr><tr><td>Altura uterina</td>${C.AU_CADERNETA.map(r => `<td style="text-align:center"><b>${r.cm}</b></td>`).join('')}</tr><tr class="muted"><td>Peso fetal</td>${C.AU_CADERNETA.map(r => `<td style="text-align:center">${r.g.toLocaleString('pt-BR')} g</td>`).join('')}</tr></table>
+        <p class="muted" style="font-size:11px;margin:6px 0 0">Valores médios (cm) da curva impressa na Caderneta (Assis GP et al., 2021). A Caderneta traz uma linha única, sem faixa; por isso o app usa a faixa P10–P90 do ${esc(C.auRef(30).fonte)} para os alertas.</p></details></div>
     <div class="card"><h3>⚖️ Ganho de peso ${pill(gR)}</h3>
       ${cat ? `<span class="muted" style="font-size:12px">IMC pré-gestacional <b>${imc.toFixed(1).replace('.', ',')}</b> · ${C.GWG[cat].nome} · ganho recomendado até 40 semanas: <b>${C.GWG[cat].total.map(x => x.toFixed(1).replace('.', ',')).join(' a ')} kg</b></span>
         <canvas id="g-peso" height="220" style="margin-top:10px" role="img" aria-label="Gráfico de ganho de peso por idade gestacional"></canvas>
         <div class="legend"><span><i style="background:rgba(92,132,104,.28)"></i>Faixa recomendada (${C.GWG[cat].faixa})</span><span><i style="background:#6a4664"></i>Seu ganho</span></div>
         ${gR && gR.msg ? `<p style="font-size:13px;margin:10px 0 0">${esc(gR.msg)}</p>` : ''}
         ${!P.gw.length ? '<p class="muted" style="font-size:12.5px;text-align:center;margin:8px 0 0">Registre o <b>peso</b> nas consultas para ver sua curva.</p>' : ''}
-        <p class="muted" style="font-size:11px;margin:10px 0 0">Referência: Caderneta 2026 / Kac et al., Am J Clin Nutr 2021. Faixa desenhada pelos pontos oficiais de 13, 27 e 40 semanas. Curvas válidas para gestação de um bebê em adultas.</p>`
+        <p class="muted" style="font-size:11px;margin:10px 0 0">Referência: Caderneta 2026 / Kac et al., Am J Clin Nutr 2021. Faixa semana a semana copiada das curvas oficiais da Caderneta. Como na Caderneta: 1 a 3 dias conta a semana completa; 4 a 6 dias, a semana seguinte. Curvas válidas para gestação de um bebê em adultas.</p>`
       : `<p class="muted" style="font-size:13px;margin:8px 0">Para calcular sua faixa, informe sua altura e o peso de antes da gravidez:</p>
         <div class="row"><input class="in" id="cv-alt" type="number" inputmode="decimal" placeholder="Altura (cm)" aria-label="Altura em cm"><input class="in" id="cv-pp" type="number" inputmode="decimal" step="0.1" placeholder="Peso antes (kg)" aria-label="Peso antes da gravidez em kg"></div>
         <button class="btn full sm" onclick="saveIMC()">Calcular minha faixa</button>`}</div>
@@ -878,7 +884,7 @@ function monitorCard(key) {
   const custom = key.startsWith('custom:'), mid = custom ? key.slice(7) : null, cm = custom && Store.get('monitores', mid);
   const cfg = custom ? { nome: cm.nome, ic: '📈', u: cm.unidade || '', meta: (cm.minimo != null || cm.maximo != null) ? `Faixa: ${cm.minimo ?? '–'} a ${cm.maximo ?? '–'} ${cm.unidade || ''}` : '' } : MON[key];
   const logs = L('medicoes').filter(m => custom ? m.monitor_id === mid : m.tipo === key).sort((a, b) => b.medido_em.localeCompare(a.medido_em));
-  const alertOf = l => key === 'pressao' ? (C.classifyBP(l.sis, l.dia) !== 'ok') : key === 'glicemia' ? ((C.classifyGlucose(l.valor, l.momento) || {}).sev === 'media') : key === 'temperatura' ? +l.valor > C.FEBRE : custom ? ((cm.minimo != null && +l.valor < +cm.minimo) || (cm.maximo != null && +l.valor > +cm.maximo)) : false;
+  const alertOf = l => key === 'pressao' ? (C.classifyBP(l.sis, l.dia) !== 'ok') : key === 'glicemia' ? ((C.classifyGlucose(l.valor, l.momento) || {}).sev === 'media') : key === 'temperatura' ? +l.valor >= C.FEBRE : custom ? ((cm.minimo != null && +l.valor < +cm.minimo) || (cm.maximo != null && +l.valor > +cm.maximo)) : false;
   const show = l => key === 'pressao' ? `${l.sis}/${l.dia}` : String(l.valor).replace('.', ',');
   return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">${cfg.ic} ${esc(cfg.nome)}</h3>
       <div style="display:flex;gap:6px">${custom ? `<button class="x" style="font-size:16px" aria-label="Excluir acompanhamento" onclick="confirmBox('Excluir este acompanhamento e suas medições?',()=>{Store.remove('monitores','${mid}');L('medicoes').filter(m=>m.monitor_id==='${mid}').forEach(m=>Store.remove('medicoes',m.id));renderRecBody()},{danger:true,yes:'Excluir'})">🗑️</button>` : ''}<button class="btn sm" onclick="modalMedicao('${esc(key)}')">+ Registrar</button></div></div>
@@ -1003,7 +1009,7 @@ const FAQS = [
   ['Que alimentos devo evitar?', 'Carnes, ovos e peixes crus ou malpassados, leite e queijos não pasteurizados, embutidos crus e álcool. Lave bem frutas e verduras (toxoplasmose).'],
   ['É seguro fazer exercícios?', 'Na maioria das gestações, sim: caminhada, hidroginástica e alongamento são ótimos. Confirme com sua equipe e evite impacto e risco de queda.'],
   ['Quando vou sentir o bebê mexer?', 'Em geral entre 18 e 22 semanas (às vezes antes, em quem já teve filhos). Depois de 28 semanas, preste atenção diariamente.'],
-  ['Quantas consultas de pré-natal preciso?', 'No mínimo 7, alternando médico(a) e enfermeiro(a): mensais até 28 semanas, quinzenais até 36 e semanais depois. Não existe “alta” do pré-natal.'],
+  ['Quantas consultas de pré-natal preciso?', 'No mínimo 7, intercaladas entre médica(o) e enfermeira(o), mais pelo menos 1 consulta odontológica: mensais até 28 semanas, quinzenais da 28ª à 36ª e semanais a partir da 36ª. Depois do parto, no mínimo 2 consultas puerperais (a primeira até 7 dias). Não existe “alta” do pré-natal.'],
   ['Quanto peso devo ganhar?', 'Depende do seu IMC antes da gravidez. Para peso adequado, a Caderneta recomenda 8 a 12 kg até 40 semanas. Veja sua curva em Prontuário → Curvas.'],
   ['Tenho direito a acompanhante?', 'Sim. A lei garante acompanhante de sua escolha durante o pré-parto, parto e pós-parto, no SUS e na rede privada (Lei 11.108/2005).'],
   ['Qual a diferença entre DUM e ultrassom para a idade gestacional?', 'A DUM depende de lembrar a data e de ciclos regulares. O ultrassom do 1º trimestre (idealmente 7 a 12 semanas) mede o bebê e é mais preciso — por isso é o mais usado para datar a gestação.']];
@@ -1012,8 +1018,10 @@ function renderHelp() {
   $('pg-help').innerHTML = `<div class="section-t"><i class="ph ph-first-aid-kit"></i> Emergência</div>
     <button class="btn full" style="background:var(--bad);margin-bottom:10px" onclick="modalDangerCheck()">🚨 Estou sentindo algo — o que faço?</button>
     <div class="row" style="margin-bottom:12px"><a class="btn sec" style="text-align:center;text-decoration:none" href="tel:192">📞 SAMU 192</a><a class="btn sec" style="text-align:center;text-decoration:none" href="tel:188">💜 CVV 188</a></div>
+    <details class="card" style="margin-bottom:12px"><summary style="cursor:pointer"><b>☎️ Telefones úteis da Caderneta</b></summary>
+      ${[['180', 'Central de Atendimento à Mulher (violência)'], ['100', 'Disque Direitos Humanos'], ['136', 'Ouvidoria do SUS'], ['121', 'Disque Social (MDS)'], ['135', 'Central do INSS'], ['08007019656', 'ANS — planos de saúde']].map(([n, t]) => `<a href="tel:${n}" style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);text-decoration:none;color:inherit;font-size:13.5px"><span>${t}</span><b>${n.length > 4 ? '0800 701 9656' : n}</b></a>`).join('')}</details>
     <button class="btn sec full" style="margin-bottom:6px" onclick="showEmergCard()">🆘 Meu cartão de emergência</button>
-    <div class="section-t"><i class="ph ph-warning"></i> Sinais de perigo — procure atendimento</div>
+    <div class="section-t"><i class="ph ph-warning"></i> Sinais de alerta — procure atendimento</div>
     <p class="muted" style="font-size:13px;margin:-4px 2px 10px">Segundo a Caderneta Brasileira da Gestante, procure a maternidade ou ligue 192 se tiver:</p>
     ${C.SINAIS_PERIGO.map(d => `<div class="danger"><div class="di">${d.ic}</div><div><b>${d.t}</b>${d.s ? `<span>${d.s}</span>` : ''}</div></div>`).join('')}
     ${p.maternidade_referencia ? `<div class="card" style="text-align:center"><span class="muted" style="font-size:12px">Sua maternidade de referência</span><br><b>${esc(p.maternidade_referencia)}</b></div>` : ''}
@@ -1135,7 +1143,7 @@ function modalPremium() {
   const F = [['🔬', 'Exames da Caderneta', 'Resultados, gráficos e alertas de valores fora do esperado'], ['🖼️', 'Ultrassons com fotos', 'Álbum com dados do laudo'], ['🏠', 'Diário em casa', 'Pressão, glicemia, peso, temperatura — com lembretes'], ['💊', 'Medicação', 'Notificação na hora de cada dose'],
     ['📝', 'Sintomas e anotações', 'Histórico e perguntas para a consulta'], ['📔', 'Memórias', 'Fotos da barriga semana a semana'], ['🗒️', 'Plano de parto', 'Documento para a maternidade'], ['📄', 'Resumo em PDF', 'Toda a gestação num documento']];
   openModal('✨ Ninho+', `${plus ? `<div class="alert allgood"><div class="ai">💜</div><div><b class="t" style="color:var(--good)">Você tem o Ninho+</b><p style="margin:0">Obrigado por cuidar com a gente.</p></div></div>` : ''}
-    <div class="card" style="background:var(--grad-soft)"><b>Grátis, para sempre</b><p class="muted" style="font-size:12.5px;margin:4px 0 0">Acompanhamento semana a semana, consultas, <b>curvas da Caderneta</b> (altura uterina e ganho de peso), jornada com exames e vacinas, contador de movimentos, alertas, sinais de perigo e cartão de emergência.</p></div>
+    <div class="card" style="background:var(--grad-soft)"><b>Grátis, para sempre</b><p class="muted" style="font-size:12.5px;margin:4px 0 0">Acompanhamento semana a semana, consultas, <b>curvas da Caderneta</b> (altura uterina e ganho de peso), jornada com exames e vacinas, contador de movimentos, alertas, sinais de alerta e cartão de emergência.</p></div>
     ${F.map(f => `<div class="list-item"><div class="li-ic">${f[0]}</div><div class="li-t"><b>${f[1]}</b><span>${f[2]}</span></div><div style="color:var(--violet)">✓</div></div>`).join('')}
     ${plus ? (local ? '<button class="btn sec full" style="margin-top:14px" onclick="setDemoPlan(\'free\')">Voltar ao grátis (modo local)</button>' : '<p class="muted" style="font-size:12.5px;text-align:center;margin-top:12px">Para cancelar ou trocar o cartão, use o link do Mercado Pago enviado por e-mail.</p>')
       : `<div style="text-align:center;margin:14px 0"><div style="font-family:var(--serif);font-size:28px;color:var(--violet)">${esc(CFG.PRECOS.mensal)}<span style="font-size:14px;color:var(--muted)">/mês</span></div><div class="muted" style="font-size:12px">ou ${esc(CFG.PRECOS.anual)}/ano · cancele quando quiser</div></div>
