@@ -3,7 +3,7 @@
    * Bibliotecas de CDN: stale-while-revalidate
    * Dados de saúde (Supabase) NUNCA entram no cache do SW
    * Recebe Web Push e abre o app ao tocar na notificação */
-const VERSION = 'ninho-v2.2.0';
+const VERSION = 'ninho-v2.2.3';
 const SHELL = ['./', 'index.html', 'css/app.css', 'js/config.js', 'js/clinical.js', 'js/store.js', 'js/alerts.js', 'js/notify.js', 'js/ilustra.js', 'js/fases.js', 'js/crescimento.js', 'js/app.js',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png'];
 const CDN = /^(https:\/\/(cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net|fonts\.googleapis\.com|fonts\.gstatic\.com))\//;

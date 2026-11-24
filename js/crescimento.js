@@ -32,8 +32,14 @@ const PLUS_RECURSOS = [
 ];
 
 /** Passe Gestação até a semana RETA_FINAL_DESDE − 1; depois, Passe Reta Final (mais barato, porque falta menos tempo). */
+/** Semana usada no preço: a datação menos adiantada entre a 1ª registrada e a atual (igual ao servidor). */
+function semanaPreco() {
+  const g = S() && S().gestacao; if (!g) return 0;
+  const atual = ga().dpp, dpp = g.dpp_original && g.dpp_original > atual ? g.dpp_original : atual;
+  return Math.floor((280 - C.diffDays(dpp, todayISO())) / 7);
+}
 function passeAtual() {
-  const reta = S() && S().gestacao && ga().w >= (CFG.RETA_FINAL_DESDE || 28) && CFG.PRECOS.reta_final;
+  const reta = S() && S().gestacao && semanaPreco() >= (CFG.RETA_FINAL_DESDE || 28) && CFG.PRECOS.reta_final;
   return reta ? { nome: 'Passe Reta Final', preco: CFG.PRECOS.reta_final, sub: `Para quem está a partir de ${CFG.RETA_FINAL_DESDE || 28} semanas` } : { nome: 'Passe Gestação', preco: CFG.PRECOS.passe, sub: '' };
 }
 function modalPremium() {

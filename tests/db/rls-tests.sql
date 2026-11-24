@@ -183,6 +183,27 @@ select pg_temp.ok(admin_eh('44444444-4444-4444-4444-444444444444'), 'administrad
 select pg_temp.falha($$select admin_definir('44444444-4444-4444-4444-444444444444', false)$$, 'não remove a última administradora');
 select admin_config_salvar(null, '{"recursos":{}}') is not null;
 
+-- ===== Passe: preço protegido e acesso que acompanha a DPP =====
+insert into auth.users (id, email, raw_user_meta_data) values ('55555555-5555-5555-5555-555555555555', 'eva@ex.com', '{"nome_completo":"Eva Lima"}');
+set role authenticated;
+select set_config('request.jwt.claim.sub', '55555555-5555-5555-5555-555555555555', false);
+insert into gestacoes (id, metodo_ig, dum) values ('eeeeeeee-0000-0000-0000-000000000001', 'dum', current_date - 105);   -- 15 semanas
+select pg_temp.ok((select dpp_original from gestacoes) = current_date - 105 + 280, 'DPP da 1ª datação fica registrada');
+update gestacoes set dum = current_date - 210, dpp_original = '2000-01-01';                                            -- "vira" 30 semanas
+select pg_temp.ok((select dpp_original from gestacoes) = current_date - 105 + 280, 'usuária não altera a DPP original');
+reset role;
+select pg_temp.ok(not privado.eh_reta_final('55555555-5555-5555-5555-555555555555'), 'adiantar a datação não dá o preço do Reta Final');
+update gestacoes set dum = current_date - 105 where user_id = '55555555-5555-5555-5555-555555555555';
+select conceder_passe('55555555-5555-5555-5555-555555555555', 'mp:teste-1') is not null;
+select pg_temp.ok((select fim::date from concessoes where ref = 'mp:teste-1') = current_date - 105 + 280 + 90, 'Passe vale até DPP + 90 dias');
+update gestacoes set dum = current_date - 84 where user_id = '55555555-5555-5555-5555-555555555555';                -- ultrassom atrasa 3 semanas
+select pg_temp.ok((select fim::date from concessoes where ref = 'mp:teste-1') = current_date - 84 + 280 + 90, 'DPP corrigida: o acesso acompanha');
+select conceder_passe('55555555-5555-5555-5555-555555555555', 'mp:teste-2', true) is not null;
+select pg_temp.ok((select teto = inicio + interval '12 weeks' + interval '90 days' from concessoes where ref = 'mp:teste-2'), 'Reta Final tem teto de 12 semanas + 90 dias');
+update gestacoes set dum = current_date - 20 where user_id = '55555555-5555-5555-5555-555555555555';                -- tenta "voltar" a gestação
+select pg_temp.ok((select fim from concessoes where ref = 'mp:teste-2') <= (select teto from concessoes where ref = 'mp:teste-2'), 'voltar a DPP não passa do teto do Reta Final');
+select pg_temp.ok((select bool_and(fim > inicio) from concessoes where user_id = '55555555-5555-5555-5555-555555555555'), 'concessões continuam válidas depois do ajuste');
+
 -- ===== anônimo =====
 set role anon;
 select pg_temp.ok((select count(*) from app_config) = 1, 'anônimo lê a configuração pública');

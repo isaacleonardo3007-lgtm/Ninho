@@ -65,7 +65,7 @@
     memorias: { plus: true, rec: 'memorias', cols: ['tipo', 'titulo', 'semana', 'texto', 'arquivo_path'] },
   };
   const ORDER = ['consultas', 'vacinas', 'movimentos', 'exames', 'ultrassons', 'monitores', 'medicoes', 'sintomas', 'medicamentos', 'doses', 'notas', 'memorias'];
-  const GEST_COLS = ['id', 'user_id', 'ativa', 'nome_bebe', 'metodo_ig', 'dum', 'usg_data', 'usg_ig_semanas', 'usg_ig_dias', 'dpp_informada', 'dpp', 'tipo_gravidez', 'planejada', 'gesta', 'para', 'abortos', 'risco', 'altura_cm', 'peso_pre_kg', 'antecedentes', 'plano_parto', 'desfecho', 'created_at', 'updated_at', 'deleted_at'];
+  const GEST_COLS = ['id', 'user_id', 'ativa', 'nome_bebe', 'metodo_ig', 'dum', 'usg_data', 'usg_ig_semanas', 'usg_ig_dias', 'dpp_informada', 'dpp', 'tipo_gravidez', 'planejada', 'gesta', 'para', 'abortos', 'risco', 'altura_cm', 'peso_pre_kg', 'antecedentes', 'plano_parto', 'desfecho', 'dpp_original', 'created_at', 'updated_at', 'deleted_at'];
   const PROFILE_COLS = ['nome_completo', 'nome_social', 'data_nascimento', 'telefone', 'cpf', 'cns', 'raca_cor', 'escolaridade', 'ocupacao', 'estado_civil', 'municipio', 'uf', 'ubs_referencia', 'maternidade_referencia', 'contato_emergencia_nome', 'contato_emergencia_tel', 'contato_emergencia_relacao', 'tipo_sanguineo', 'doenca_falciforme', 'deficiencia', 'alergias', 'condicoes', 'medicamentos_uso', 'preferencias', 'gamificacao'];
   const ARRAYS = new Set(['alergias', 'condicoes', 'medicamentos_uso', 'horarios']);
   const JSONS = new Set(['preferencias', 'gamificacao', 'antecedentes', 'plano_parto', 'desfecho']);
@@ -333,8 +333,11 @@
     },
     setGestacao(data) {
       const now = nowISO(); const cur = this.S.gestacao;
+      const orig = cur && cur.dpp_original;   // DPP da 1ª datação: fixa (o banco também garante)
       this.S.gestacao = Object.assign(cur || { id: uuid(), user_id: this.S.uid, created_at: now, ativa: true, antecedentes: {}, plano_parto: {} }, data, { updated_at: now, _dirty: true });
-      this.changed(); return this.S.gestacao;
+      const g = this.S.gestacao, r = window.Clin && window.Clin.gaFrom(g);
+      g.dpp_original = orig || (r && r.ok ? r.dpp : null);
+      this.changed(); return g;
     },
     changed() { this.persist(); this.emit('change'); this.scheduleSync(); },
     addConsents(list) { const rows = list.map(c => ({ ...c, origem: c.origem || 'configuracoes', registrado_em: nowISO() })); this.S.consents.push(...rows); this.S.meta.pendingConsents.push(...rows); this.changed(); },

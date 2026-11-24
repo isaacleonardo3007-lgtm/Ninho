@@ -178,7 +178,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .btn:active{transform:scale(.97)}
 .btn.sec{background:var(--brand-soft);color:var(--violet);border:none;box-shadow:none;font-weight:700}
 .btn.full{width:100%;display:block;text-align:center}
-.btn.sm{padding:8px 13px;font-size:12.5px;border-radius:11px;box-shadow:none}
+.btn.sm{padding:8px 13px;font-size:12.5px;border-radius:11px;box-shadow:none;min-height:38px}
 .in{width:100%;padding:12px 14px;border-radius:13px;border:1px solid var(--line);font-size:15px;
   font-family:inherit;background:var(--bg);color:var(--ink);font-weight:500;margin-bottom:10px}
 .in:focus{outline:none;border-color:var(--violet);background:var(--card)}
@@ -290,7 +290,7 @@ canvas{max-width:100%}
 .alert.atencao{background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 40%,transparent)}.alert.atencao b.t{color:var(--warn)}
 .alert.info{background:var(--brand-soft);border-color:var(--line)}.alert.info b.t{color:var(--violet)}
 .alert .acts{display:flex;gap:8px;flex-wrap:wrap}
-.alert .acts button{background:var(--card);border:1px solid var(--line);color:var(--ink);padding:7px 12px;border-radius:10px;font-size:12.5px;font-weight:700}
+.alert .acts button{background:var(--card);border:1px solid var(--line);color:var(--ink);padding:7px 12px;border-radius:10px;font-size:12.5px;font-weight:700;min-height:38px}
 .alert.urgente .acts button.pri{background:var(--bad);color:#fff;border-color:var(--bad)}
 .allgood{background:var(--good-soft);border:1px solid color-mix(in srgb,var(--good) 30%,transparent);color:var(--good)}
 .toggle{position:relative;width:46px;height:28px;flex-shrink:0}

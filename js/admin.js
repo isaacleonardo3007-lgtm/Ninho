@@ -49,7 +49,21 @@
       ${msg ? `<div class="alert urgente" style="margin:8px 0"><div><p style="margin:0">${esc(msg)}</p></div></div>` : ''}
       <label class="lbl" for="lg-e">E-mail</label><input class="in" id="lg-e" type="email" autocomplete="username" required>
       <label class="lbl" for="lg-s">Senha</label><input class="in" id="lg-s" type="password" autocomplete="current-password" required>
-      <button class="btn full" style="margin-top:12px" type="submit">Entrar</button></form>`;
+      <button class="btn full" style="margin-top:12px" type="submit">Entrar</button>
+      <button class="btn sec full" style="margin-top:8px" type="button" data-act="esqueci">Esqueci minha senha</button></form>`;
+  }
+  /** Envia o e-mail de nova senha. O link abre o app, que mostra a tela "Nova senha". */
+  async function esqueci(el) {
+    const email = $('lg-e').value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { $('lg-e').focus(); return toast('Digite seu e-mail no campo acima'); }
+    el.disabled = true; el.textContent = 'Enviando…';
+    const app = location.origin + location.pathname.replace(/admin\.html$/, '');
+    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: app });
+    el.disabled = false; el.textContent = 'Esqueci minha senha';
+    // mesma mensagem com ou sem conta, para não revelar quais e-mails existem
+    if (error && !/rate|limit/i.test(error.message)) return toast('Não foi possível enviar agora. Tente de novo em alguns minutos.');
+    if (error) return toast('Muitas tentativas. Espere alguns minutos e tente de novo.');
+    toast('Se esse e-mail tiver conta, você vai receber um link para criar uma nova senha. Olhe também o lixo eletrônico.');
   }
   async function entrar() {
     try {
@@ -169,7 +183,7 @@
   /* ---------------- ações ---------------- */
   async function ocupado(el, fn) { const t = el && el.innerHTML; if (el) { el.disabled = true; el.textContent = 'Aguarde…'; } try { return await fn(); } finally { if (el && document.body.contains(el)) { el.disabled = false; el.innerHTML = t; } } }
   const ACT = {
-    fechar: fechar, fecharFundo: (el, ev) => { if (ev.target === el) fechar(); }, sair,
+    fechar: fechar, fecharFundo: (el, ev) => { if (ev.target === el) fechar(); }, sair, esqueci,
     conta: el => abrirConta(el.dataset.id),
     pagina: el => { ESTADO.offset = Math.max(0, ESTADO.offset + Number(el.dataset.d) * ESTADO.limite); telaContas(); },
     encerrar: el => ocupado(el, async () => { try { await api('encerrar', { id: el.dataset.id, concessao: el.dataset.c }); toast('Acesso encerrado'); abrirConta(el.dataset.id); } catch (e) { toast(e.message); } }),

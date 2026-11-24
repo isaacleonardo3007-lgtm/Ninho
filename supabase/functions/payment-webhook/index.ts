@@ -45,7 +45,8 @@ async function pagamento(id: string) {
 
   if (tipo === 'passe') {
     if (p.status === 'approved') {
-      const { error } = await admin.rpc('conceder_passe', { uid: ref, p_ref: `mp:${p.id}` });
+      const item = p.additional_info?.items?.[0]?.id;   // qual Passe foi pago: define o teto do acesso
+      const { error } = await admin.rpc('conceder_passe', { uid: ref, p_ref: `mp:${p.id}`, p_reta: item ? item === 'passe-reta-final' : null });
       if (error) { console.error(error); return new Response('erro', { status: 500 }); }
     } else if (estornado) {
       await admin.rpc('encerrar_concessao', { p_origem: 'passe', p_ref: `mp:${p.id}` });

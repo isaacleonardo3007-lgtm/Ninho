@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
 
   const cfg = await lerConfig(admin);
   if (ciclo === 'passe') {
-    const { data: dpp } = await admin.rpc('dpp_atual_servico', { uid: user.id });
+    const { data: dpp } = await admin.rpc('dpp_preco_servico', { uid: user.id });   // datação menos adiantada (protege o preço)
     const semana = dpp ? 40 - Math.ceil((new Date(dpp + 'T12:00:00Z').getTime() - Date.now()) / (7 * 864e5)) : 0;
     const reta = semana >= cfg.reta_final_desde;
     const valor = reta ? cfg.precos.reta_final : cfg.precos.passe;
