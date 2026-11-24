@@ -6,12 +6,13 @@ import crypto from 'crypto';
 const PLUS = new Set(['exames', 'ultrassons', 'monitores', 'medicoes', 'sintomas', 'medicamentos', 'doses', 'notas', 'memorias']);
 const CHILD = ['consultas', 'vacinas', 'movimentos', ...PLUS];
 export function createMockServer() {
-  const db = { users: [], profiles: [], gestacoes: [], consentimentos: [], assinaturas: [], lembretes: [], push_subscriptions: [], storage: {} };
+  const db = { users: [], profiles: [], gestacoes: [], consentimentos: [], assinaturas: [], lembretes: [], push_subscriptions: [], concessoes: [], indicacoes: [], familia_convites: [], familia_recados: [], app_config: [{ id: 1, dados: { precos: { passe: 89.9, reta_final: 59.9, mensal: 14.9 }, reta_final_desde: 28, teste_dias: 7, indicacao_dias: 30, aviso: null, recursos: {} } }], storage: {} };
   CHILD.forEach(t => (db[t] = []));
   let clock = Date.now();
   const ts = () => new Date(++clock).toISOString();
   const err = (message, code) => ({ error: { message, code } });
-  const isPlus = uid => db.assinaturas.some(a => a.user_id === uid && a.plano === 'plus');
+  const isPlus = uid => db.assinaturas.some(a => a.user_id === uid && a.plano === 'plus') || db.concessoes.some(c => c.user_id === uid && c.fim > new Date().toISOString());
+  const conceder = (uid, origem, dias) => { const base = db.concessoes.filter(c => c.user_id === uid).map(c => c.fim).sort().pop() || new Date().toISOString(); const ini = base > new Date().toISOString() ? base : new Date().toISOString(); const fim = new Date(new Date(ini).getTime() + dias * 864e5).toISOString(); db.concessoes.push({ user_id: uid, origem, inicio: ini, fim }); return fim; };
 
   function handle(op, a) {
     const uid = a.uid;
@@ -20,7 +21,7 @@ export function createMockServer() {
         if (db.users.some(u => u.email === a.email)) return { data: { user: { id: 'x', identities: [] }, session: null } };
         const u = { id: crypto.randomUUID(), email: a.email, pass: a.password, meta: a.meta || {}, confirmed: false };
         db.users.push(u);
-        db.profiles.push({ id: u.id, user_id: u.id, nome_completo: u.meta.nome_completo, data_nascimento: u.meta.data_nascimento, telefone: u.meta.telefone, alergias: [], condicoes: [], medicamentos_uso: [], preferencias: {}, gamificacao: {}, updated_at: ts() });
+        db.profiles.push({ id: u.id, user_id: u.id, codigo_indicacao: crypto.randomBytes(3).toString('hex').toUpperCase().replace(/[01]/g, 'X'), nome_completo: u.meta.nome_completo, data_nascimento: u.meta.data_nascimento, telefone: u.meta.telefone, alergias: [], condicoes: [], medicamentos_uso: [], preferencias: {}, gamificacao: {}, updated_at: ts() });
         db.assinaturas.push({ user_id: u.id, plano: 'free', status: 'active' });
         (u.meta.consentimentos || []).forEach(c => db.consentimentos.push({ user_id: u.id, ...c, origem: 'cadastro', registrado_em: ts() }));
         return { data: { user: { id: u.id, email: u.email, identities: [{}], user_metadata: u.meta }, session: null } };
@@ -33,10 +34,25 @@ export function createMockServer() {
         return { data: { user: { id: u.id, email: u.email, user_metadata: u.meta }, session: { access_token: u.id, user: { id: u.id, email: u.email, user_metadata: u.meta } } } };
       }
       case 'setPlan': { const s = db.assinaturas.find(x => x.user_id === a.user); s.plano = a.plano; return {}; }
-      case 'rpc': if (a.fn === 'meu_plano') return { data: { plano: isPlus(uid) ? 'plus' : 'free', status: 'active' } }; return err('rpc');
+      case 'rpc': {
+        if (!uid) return err('permission denied', '42501');
+        const meus = db.concessoes.filter(c => c.user_id === uid), agora = new Date().toISOString(), prof = db.profiles.find(p => p.id === uid) || {};
+        if (a.fn === 'meu_plano') return { data: { plano: isPlus(uid) ? 'plus' : 'free', status: 'active', assinatura: db.assinaturas.some(x => x.user_id === uid && x.plano === 'plus'),
+          acesso_ate: meus.filter(c => c.fim > agora).map(c => c.fim).sort().pop() || null, origem: (meus.filter(c => c.fim > agora).pop() || {}).origem || null,
+          teste_disponivel: !meus.some(c => c.origem === 'teste'), codigo_indicacao: prof.codigo_indicacao, indicacao_usada: db.indicacoes.some(i => i.indicada === uid), indicadas: db.indicacoes.filter(i => i.indicadora === uid).length } };
+        if (a.fn === 'iniciar_teste') { if (meus.some(c => c.origem === 'teste')) return { data: { ok: false, motivo: 'usado' } }; return { data: { ok: true, ate: conceder(uid, 'teste', 7) } }; }
+        if (a.fn === 'usar_indicacao') {
+          const cod = String((a.args || {}).p_codigo || '').toUpperCase(), dona = db.profiles.find(p => p.codigo_indicacao === cod);
+          if (db.indicacoes.some(i => i.indicada === uid)) return { data: { ok: false, motivo: 'ja_usou' } };
+          if (!dona) return { data: { ok: false, motivo: 'invalido' } }; if (dona.id === uid) return { data: { ok: false, motivo: 'proprio' } };
+          db.indicacoes.push({ indicada: uid, indicadora: dona.id }); conceder(dona.id, 'indicacao', 30); return { data: { ok: true, ate: conceder(uid, 'indicacao', 30) } };
+        }
+        if (a.fn === 'resgatar_presente') return { data: { ok: false, motivo: 'invalido' } };
+        return err('rpc');
+      }
       case 'select': {
         if (!uid) return err('permission denied', '42501');
-        let rows = (db[a.table] || []).filter(r => (r.user_id || r.id) === uid);
+        let rows = a.table === 'app_config' ? db.app_config.slice() : (db[a.table] || []).filter(r => (r.user_id || r.id) === uid);
         for (const [k, f, v] of a.filters) rows = rows.filter(r => f === 'eq' ? r[k] === v : f === 'gt' ? r[k] > v : f === 'lt' ? r[k] < v : f === 'lte' ? r[k] <= v : f === 'is' ? (r[k] ?? null) === v : f === 'in' ? v.includes(r[k]) : true);
         if (a.order) rows.sort((x, y) => String(x[a.order]).localeCompare(String(y[a.order])));
         if (a.range) rows = rows.slice(a.range[0], a.range[1] + 1);
@@ -56,9 +72,9 @@ export function createMockServer() {
           const key = a.onConflict === 'user_id,chave' ? (x => x.user_id === r.user_id && x.chave === r.chave) : a.onConflict === 'endpoint' ? (x => x.endpoint === r.endpoint) : (x => x.id === r.id);
           const i = T.findIndex(key);
           if (i >= 0) { if (a.ignoreDuplicates) continue; if (T[i].user_id !== uid) return err('rls', '42501'); T[i] = { ...T[i], ...r, created_at: T[i].created_at, updated_at: now }; }
-          else T.push({ ...r, id: r.id || crypto.randomUUID(), created_at: r.created_at || now, updated_at: now });
+          else T.push({ ...r, id: r.id || crypto.randomUUID(), ...(a.table === 'familia_convites' ? { token: crypto.randomBytes(32).toString('hex'), revogado_em: null } : {}), created_at: r.created_at || now, updated_at: now });
         }
-        return { data: null };
+        return { data: a.single ? JSON.parse(JSON.stringify(T[T.length - 1])) : null };
       }
       case 'update': {
         if (!uid) return err('permission denied', '42501');
@@ -83,7 +99,7 @@ export function createMockServer() {
           Object.keys(db.storage).filter(p => p.startsWith(uid + '/')).forEach(p => delete db.storage[p]);
           return { data: { ok: true } };
         }
-        if (a.name === 'create-checkout') return { data: { url: 'https://www.mercadopago.com.br/subscriptions/checkout?preapproval_id=teste' } };
+        if (a.name === 'create-checkout') return { data: { url: a.body && a.body.ciclo === 'passe' ? 'https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=teste' : 'https://www.mercadopago.com.br/subscriptions/checkout?preapproval_id=teste', retorno: a.body && a.body.retorno } };
         return err('fn');
       }
     }
@@ -105,7 +121,9 @@ export const BROWSER_CLIENT = `
     ['eq','gt','lt','lte','is','in'].forEach(m => Q.prototype[m]=function(k,v){ this.f.push([k,m,v]); return this; });
     Q.prototype.order=function(c){ this.ord=c; return this; };
     Q.prototype.range=function(a,b){ this.rg=[a,b]; return this; };
+    Q.prototype.limit=function(){ return this; };
     Q.prototype.maybeSingle=function(){ this.single=true; return this; };
+    Q.prototype.single=Q.prototype.maybeSingle;
     Q.prototype.upsert=function(rows,o={}){ this.op='upsert'; this.rows=[].concat(rows); this.o=o; return this; };
     Q.prototype.insert=function(rows){ this.op='insert'; this.rows=[].concat(rows); this.o={}; return this; };
     Q.prototype.update=function(p){ this.op='update'; this.patch=p; return this; };
@@ -117,7 +135,7 @@ export const BROWSER_CLIENT = `
     const b64 = blob => new Promise(r => { const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(blob); });
     return {
       from: t => new Q(t),
-      rpc: fn => call('rpc', { fn, uid: uid() }),
+      rpc: (fn, args) => call('rpc', { fn, args, uid: uid() }),
       auth: {
         onAuthStateChange: cb => listeners.push(cb),
         getSession: async () => ({ data: { session: sess() } }),

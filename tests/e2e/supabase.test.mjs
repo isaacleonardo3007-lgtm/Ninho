@@ -96,6 +96,25 @@ rec('Registro feito no 2º aparelho aparece no 1º', await p.evaluate(() => L('v
 // checkout
 const url = await q.evaluate(() => Store.backend.checkout('mensal'));
 rec('Checkout devolve link https do Mercado Pago', /^https:\/\/www\.mercadopago\.com\.br\//.test(url));
+// crescimento: Passe, teste, indicação, família
+const urlP = await q.evaluate(() => Store.backend.checkout('passe'));
+rec('Passe Gestação abre Checkout Pro (pagamento único)', /checkout\/v1\/redirect/.test(urlP));
+const cod = await p.evaluate(() => Store.planInfo.codigo_indicacao);
+rec('Conta tem código de indicação', /^[A-Z0-9]{6}$/.test(cod || ''), cod);
+const fam = await p.evaluate(async () => { const c = await Store.backend.familyCreate('Vovó', false); const l = await Store.backend.familyList(); return { tok: c.token, n: l.length }; });
+rec('Cria convite da família com link longo', /^[0-9a-f]{64}$/.test(fam.tok) && fam.n === 1, JSON.stringify(fam));
+rec('Link da família usa # (token não vai para o servidor do site)', await p.evaluate(t => linkFamilia(t).includes('familia.html#' + t), fam.tok));
+// v2.2: configuração do painel e recados da família
+server.db.app_config[0].dados = Object.assign({}, server.db.app_config[0].dados, { precos: { passe: 79.9, reta_final: 49.9, mensal: 12.9 }, aviso: 'Manutenção às 23h', recursos: { notas: 'free' } });
+const cfg = await p.evaluate(async () => { await Store.refreshConfig(); renderBanners(); return { passe: CFG.PRECOS.passe, reta: CFG.PRECOS.reta_final, aviso: document.querySelector('#banners').textContent, notas: CFG.RECURSOS.notas, exames: CFG.RECURSOS.exames }; });
+rec('Preços, aviso e recursos do painel chegam ao app', cfg.passe === 'R$ 79,90' && cfg.reta === 'R$ 49,90' && /Manutenção/.test(cfg.aviso) && cfg.notas === 'free' && cfg.exames === 'plus', JSON.stringify(cfg));
+const conv = server.db.familia_convites[0];
+server.db.familia_recados.push({ id: 'r1', user_id: conv.user_id, convite_id: conv.id, autor: 'Vovó', texto: 'Estou com você <b>sempre</b>', lido_em: null, deleted_at: null, created_at: new Date().toISOString() });
+await p.evaluate(() => modalFamilia()); await p.waitForSelector('.modal:has-text("Recados")');
+rec('Recado da família aparece (texto escapado)', await p.evaluate(() => /Estou com você <b>sempre<\/b>/.test(document.querySelector('.modal').textContent) && !document.querySelector('.modal b b')));
+await p.waitForTimeout(300);
+rec('Recado é marcado como lido ao abrir', !!server.db.familia_recados[0].lido_em);
+await p.evaluate(() => closeModal());
 // sair limpa o aparelho
 await q.evaluate(() => Store.signOut()); await q.waitForSelector('#li-email');
 const left = await q.evaluate(async () => { const keys = []; await new Promise(r => { const rq = indexedDB.open('ninho'); rq.onsuccess = () => { const t = rq.result.transaction('kv').objectStore('kv').getAllKeys(); t.onsuccess = () => { keys.push(...t.result); r(); }; }; }); return keys.length; });

@@ -14,7 +14,8 @@ window.NINHO_CONFIG = {
   VERSAO_TERMOS: '2026-11',      // mude quando os textos legais mudarem: o app pede novo aceite
   CONTATO_PRIVACIDADE: 'privacidade@seudominio.com.br',   // encarregado(a) de dados (LGPD art. 41)
 
-  PRECOS: { mensal: 'R$ 14,90', anual: 'R$ 119,00' },
+  PRECOS: { passe: 'R$ 89,90', mensal: 'R$ 14,90', anual: 'R$ 119,00' },   // os valores cobrados ficam nos secrets PRECO_* do Supabase
+  TESTE_DIAS: 7, INDICACAO_DIAS: 30,
 
   /* Grátis x Plus. Mudar aqui muda o app; o banco (RLS) precisa da mesma regra:
      supabase/migrations/..._rls.sql (lista "plus" das tabelas). */
@@ -26,5 +27,8 @@ window.NINHO_CONFIG = {
     // ---- Ninho+
     exames: 'plus', ultrassons: 'plus', casa: 'plus', monitores: 'plus', medicacao: 'plus',
     sintomas: 'plus', notas: 'plus', memorias: 'plus', plano_parto: 'plus', resumo_pdf: 'plus', fotos: 'plus',
+    contracoes: 'plus', mala: 'plus', video_barriga: 'plus', familia_fotos: 'plus',
+    // grátis também: card da semana para compartilhar, convite da família, "quando ir" e "estou indo"
+    card_semana: 'free', familia: 'free', quando_ir: 'free',
   },
 };

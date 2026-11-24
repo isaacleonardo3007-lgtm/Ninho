@@ -27,7 +27,7 @@ let toastT;
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2800); }
 function confetti(n = 30) {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const cols = ['#a26a86', '#cf9fbe', '#f2e8d4', '#6a4664', '#e8f0e9'];
+  const cols = ['#a26a86', '#b8653f', '#f2e8d4', '#8fa58c', '#e6eee4'];
   for (let i = 0; i < n; i++) { const c = document.createElement('div'); c.className = 'confetti'; c.style.left = Math.random() * 100 + 'vw'; c.style.background = cols[i % cols.length]; c.style.animation = `fall ${1 + Math.random()}s ${Math.random() * .3}s ease-in forwards`; document.body.appendChild(c); setTimeout(() => c.remove(), 2500); }
 }
 function openModal(title, body, { onClose } = {}) {
@@ -203,7 +203,7 @@ async function doRecovery() { const p = $('rc-pass').value; if (!strongPass(p)) 
 function showLegal(tipo) {
   const c = esc(CFG.CONTATO_PRIVACIDADE);
   const T = {
-    termos: ['Termos de Uso', `<p>O Ninho é um <b>apoio</b> ao acompanhamento da gestação baseado na Caderneta Brasileira da Gestante (Ministério da Saúde). <b>Não substitui</b> consultas, exames ou a orientação da sua equipe de saúde, e não faz diagnóstico.</p>
+    termos: ['Termos de Uso', `<p>O Ninho é um <b>apoio</b> ao acompanhamento da gestação baseado na Caderneta Brasileira da Gestante (Ministério da Saúde). <b>Não substitui</b> consultas, exames ou a orientação da sua equipe de saúde. O Ninho oferece <b>orientações educativas</b>: não faz diagnóstico, não indica tratamento e não é dispositivo médico. Quando um registro fica fora da referência da Caderneta, o app orienta você a conversar com a equipe.</p>
       <p>Em situação de urgência, ligue <b>192 (SAMU)</b> ou procure a maternidade de referência.</p>
       <p>Você é responsável pelas informações que registra. Mantenha sua senha em sigilo.</p>
       <p>O plano gratuito inclui o acompanhamento, as curvas da Caderneta e os recursos de segurança. O Ninho+ é uma assinatura opcional, que pode ser cancelada a qualquer momento.</p>`],
@@ -374,7 +374,7 @@ function importLegacy() {
 }
 
 /* =================== APP PRINCIPAL =================== */
-function showMain() { show('main'); renderAll(); go(location.hash.slice(1) || A.page || 'home', true); scheduleReminders(); }
+function showMain() { show('main'); renderAll(); go(location.hash.slice(1) || A.page || 'home', true); scheduleReminders(); maybeOfferTrial(); }
 function go(pg, keep) {
   if (!['home', 'timeline', 'record', 'help', 'me'].includes(pg)) pg = 'home';
   A.page = pg;
@@ -390,10 +390,12 @@ function renderBanners() {
   if (Store.backend.mode === 'local') b.push(`<div class="banner dev"><i class="ph ph-wrench"></i> Modo local: os dados ficam só neste aparelho. Configure o Supabase em js/config.js.</div>`);
   else if (m.syncError === 'offline') b.push(`<div class="banner off"><i class="ph ph-wifi-slash"></i> Sem internet — seus registros ficam guardados e sincronizam depois.</div>`);
   else if (m.syncError) b.push(`<div class="banner off"><i class="ph ph-warning"></i> Não foi possível sincronizar agora. Tentaremos de novo. <button class="btn sm sec" style="margin-left:auto" onclick="Store.sync().catch(()=>{})">Tentar</button></div>`);
+  if (CFG.AVISO) b.push(`<div class="banner aviso"><i class="ph ph-megaphone"></i> ${esc(CFG.AVISO)}</div>`);
   if (Store.blockedCount()) b.push(`<div class="banner dev"><i class="ph ph-lock"></i> ${Store.blockedCount()} registro(s) do Ninho+ guardados só neste aparelho.</div>`);
   $('banners').innerHTML = b.join('');
 }
 function renderHeader() {
+  if (fase() !== 'gestacao') return renderHeaderFase();
   const g = ga(); const [fr, nm] = fruitFor(g.w); const tri = C.trimester(g.w); const pct = Math.max(0, Math.min(100, Math.round(g.days / 280 * 100)));
   const faltam = Math.max(0, C.diffDays(g.dpp, todayISO()));
   if (A.page && A.page !== 'home') {   // nas outras abas, cabeçalho compacto: mais espaço para o conteúdo
@@ -411,9 +413,9 @@ function renderHeader() {
       <div class="progbar"><i style="width:${pct}%"></i></div>
       <span class="tri-tag">DPP: ${fmt(g.dpp)} · faltam ${faltam} dias</span></div></div></div>`;
 }
-const FRUITS = { 4: ['🫐', 'semente de papoula'], 5: ['🫐', 'grão de gergelim'], 6: ['🫛', 'lentilha'], 7: ['🫐', 'mirtilo'], 8: ['🫘', 'feijão'], 9: ['🍇', 'uva'], 10: ['🍓', 'morango'], 11: ['🫒', 'azeitona'], 12: ['🍋', 'limão'], 13: ['🫛', 'vagem de ervilha'], 14: ['🍋', 'limão-siciliano'], 15: ['🍎', 'maçã'], 16: ['🥑', 'abacate'], 17: ['🍐', 'pera'], 18: ['🫑', 'pimentão'], 19: ['🍅', 'tomate grande'], 20: ['🍌', 'banana'], 21: ['🥕', 'cenoura'], 22: ['🥥', 'coco pequeno'], 23: ['🥭', 'manga'], 24: ['🌽', 'espiga de milho'], 25: ['🥬', 'couve-flor'], 26: ['🥬', 'alface'], 27: ['🥦', 'brócolis'], 28: ['🍆', 'berinjela'], 29: ['🎃', 'abóbora pequena'], 30: ['🥬', 'repolho'], 31: ['🥥', 'coco'], 32: ['🥔', 'inhame'], 33: ['🍍', 'abacaxi'], 34: ['🍈', 'melão cantaloupe'], 35: ['🍈', 'melão'], 36: ['🥬', 'alface romana'], 37: ['🥬', 'acelga'], 38: ['🎃', 'abóbora'], 39: ['🍉', 'melancia pequena'], 40: ['🍉', 'melancia'] };
-function fruitFor(w) { let k = Math.max(4, Math.min(40, w)); while (!FRUITS[k] && k > 4) k--; return FRUITS[k] || ['🍼', 'seu bebê']; }
-function aOu(n) { const w = (n || '').toLowerCase().split(' ')[0]; if (['semente', 'vagem', 'couve-flor', 'alface', 'espiga', 'uva', 'pera', 'banana', 'cenoura', 'manga', 'berinjela', 'abóbora', 'maçã', 'lentilha', 'azeitona', 'acelga', 'melancia'].includes(w)) return 'uma'; return /[aã]$/.test(w) ? 'uma' : 'um'; }
+const FRUITS = C.FRUTAS;
+function fruitFor(w) { return C.frutaDa(w); }
+function aOu(n) { return C.artigo(n); }
 
 /* ---------- contexto para alertas e lembretes ---------- */
 function ctx() { return { gest: S().gestacao, ga: ga(), list: L, plus: Store.isPlus(), profile: S().profile, prefs: Store.prefs, dismissed: Store.prefs.dispensados, now: new Date() }; }
@@ -428,6 +430,7 @@ function alertAction(a) {
   if (a.startsWith('vac:')) return modalVacina(a.slice(4));
   if (a.startsWith('exam:')) return modalExame(null, a.slice(5));
 }
+const ORIENT_NOTA = '<p class="orient-nota">São orientações educativas, com base na Caderneta da Gestante 2026. Não são diagnóstico nem indicação de tratamento: quem avalia é a sua equipe de saúde.</p>';
 function alertsHTML() {
   const list = Alerts.compute(ctx()); A._alerts = list;
   if (!list.length) return `<div class="alert allgood"><div class="ai">💚</div><div><b class="t" style="color:var(--good)">Tudo certo por aqui</b><p style="margin:0">Seus registros estão dentro do esperado. Continue cuidando de você e do bebê.</p></div></div>`;
@@ -435,7 +438,7 @@ function alertsHTML() {
      <b class="t">${x.sev === 'urgente' ? 'URGENTE · ' : ''}${esc(x.titulo)}</b><p>${esc(x.msg)}</p>
      <div class="acts">${(x.acts || []).map(([l, a, cls], j) => `<button class="${cls || ''}" onclick="alertAction(A._alerts[${i}].acts[${j}][1])">${esc(l)}</button>`).join('')}
      ${x.dispensavel ? `<button onclick="dismissAlert('${jsq(x.id)}')">Ok, entendi</button>` : ''}</div>
-     ${x.fonte ? `<div class="src">Referência: ${esc(x.fonte)}</div>` : ''}</div></div>`).join('');
+     ${x.fonte ? `<div class="src">Orientação baseada em: ${esc(x.fonte)}</div>` : ''}</div></div>`).join('') + ORIENT_NOTA;
 }
 
 /* =================== INÍCIO =================== */
@@ -450,6 +453,7 @@ function setupItems() {
 }
 function renderHome() {
   if (!S() || !S().gestacao) return;
+  if (fase() !== 'gestacao') return renderHomeFase();
   const g = ga(), t = C.TRIMESTRES.find(x => g.w >= x.min && g.w <= x.max) || C.TRIMESTRES[2];
   const items = setupItems(); let ganhou = false; items.filter(i => i.done).forEach(i => { if (earn('setup:' + i.id, i.g)) ganhou = true; }); if (ganhou) renderHeader();
   if (items.every(i => i.done)) award('perfil');
@@ -484,8 +488,11 @@ function renderHome() {
     <div class="section-t"><i class="ph ph-check-circle"></i> Cuidados de hoje</div>
     ${MISSOES.map(m => `<div class="mission ${md[m.id] ? 'done' : ''}" role="button" tabindex="0" onclick="toggleMissao('${m.id}')"><div class="mi"><i class="ph ${m.ic}"></i></div><div class="mt"><b>${m.t}</b><span>${m.s}</span></div><div class="chk">${md[m.id] ? '✓' : ''}</div></div>`).join('')}
     ${notas.length ? `<div class="section-t"><i class="ph ph-push-pin"></i> Para perguntar na consulta</div><div class="card" role="button" onclick="A.recTab='notas';go('record')">${notas.slice(0, 3).map(n => `<div class="list-item"><div class="li-ic">❓</div><div class="li-t"><b style="font-weight:600">${esc(n.texto)}</b></div></div>`).join('')}</div>` : ''}
-    <div class="section-t"><i class="ph ph-baby"></i> Seu bebê agora</div>
-    <div class="card"><p class="muted" style="margin:0;font-size:14px;line-height:1.55">${t.baby}</p></div>
+    ${kitCardHome()}
+    <div class="section-t"><i class="ph ph-baby"></i> ${nBebes() > 1 ? 'Seus bebês agora' : 'Seu bebê agora'}</div>
+    <div class="card"><div class="bebe-agora"><div class="ilu-wrap" role="button" tabindex="0" onclick="modalTons()" title="Mudar ilustração">${Ilustra.bebes(tonsBebes(), { w: 92 })}</div>
+      <p class="muted" style="margin:0;font-size:14px;line-height:1.55">${t.baby}${nBebes() > 1 ? ' Na gestação múltipla, o acompanhamento é feito de forma individual pela equipe.' : ''}</p></div>
+      <div class="row" style="gap:8px;margin-top:12px"><button class="btn sec sm" style="flex:1" onclick="cardSemana()">📤 Card da semana</button><button class="btn sec sm" style="flex:1" onclick="modalTons()">🎨 Ilustração</button></div></div>
     <div class="section-t"><i class="ph ph-trophy"></i> Conquistas</div>
     <div class="card"><div class="badges">${BADGES.map(b => `<div class="badge ${B.includes(b.id) ? 'un' : ''}"><div class="bc">${b.ic}</div><span>${b.n}</span></div>`).join('')}</div></div>`;
 }
@@ -517,6 +524,7 @@ function dangerResult() {
 
 /* =================== JORNADA =================== */
 function renderTimeline() {
+  if (fase() !== 'gestacao') return renderTimelineFase();
   const g = ga(), plus = Store.isPlus(), tri = C.trimester(g.w), rhNeg = /-$/.test(S().profile.tipo_sanguineo || '');
   const feitos = {}; if (plus) L('exames').forEach(e => { const t = C.trimester(C.gaFrom(S().gestacao, e.data).w); (feitos[t] = feitos[t] || new Set()).add(e.codigo); });
   let h = `<div class="section-t"><i class="ph ph-path"></i> Sua jornada</div>
@@ -532,6 +540,7 @@ function renderTimeline() {
       <b style="font-size:13px">🔬 Exames da Caderneta nesta fase</b>
       <div style="margin:4px 0 10px">${ex.map(e => { const f = feitos[t.tri] && (feitos[t.tri].has(e.id) || (e.grupo === 'totg' && feitos[t.tri].has('totg_2h'))); return `<div class="exrow"><span class="dot ${plus ? (f ? 'ok' : (past ? 'w' : '')) : ''}"></span><div class="en">${esc(exNome(e))}${e.nota ? `<span>${esc(e.nota)}</span>` : ''}</div>${plus && active && !f ? `<button class="btn sec sm" onclick="modalExame(null,'${e.id}')">Registrar</button>` : ''}</div>`; }).join('')}</div>
       ${!plus && active ? `<div class="lock-inline"><div class="li-t"><b>Registre os resultados ${plusTag()}</b><span>Com o Ninho+ você guarda os resultados, vê gráficos e recebe alertas de valores fora do esperado.</span></div><button class="btn sm" onclick="modalPremium()">Ver</button></div>` : ''}
+      ${t.tri === 3 ? `<button class="btn sec full sm" style="margin:0 0 10px" onclick="modalKit()">👜 Kit do parto: quando ir, contrações e mala</button>` : ''}
       ${t.tri === 3 ? `<b style="font-size:13px">🏥 No parto ou logo após</b><p class="muted" style="font-size:13px;margin:4px 0 10px">${C.EXAMES_PARTO.join(' · ')}.</p>` : ''}
       <b style="font-size:13px">🩺 Consultas</b><p class="muted" style="font-size:13px;margin:4px 0 10px">${t.tri === 1 ? 'Comece até a 12ª semana. Consultas mensais.' : t.tri === 2 ? 'Mensais até 28 semanas.' : 'A cada 15 dias da 28ª à 36ª semana e semanais a partir da 36ª. Não existe “alta” do pré-natal.'}</p>
       <b style="font-size:13px">🌿 Dicas</b><ul style="margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--muted);line-height:1.6">${t.tips.map(x => `<li>${x}</li>`).join('')}</ul></details>`;
@@ -663,10 +672,14 @@ function curvaPontos() {
 function recCurvas() {
   const gest = S().gestacao, P = curvaPontos();
   const imc = C.bmi(gest.peso_pre_kg, gest.altura_cm), cat = imc ? C.bmiCat(imc) : null, idade = C.ageYears(S().profile.data_nascimento);
-  const lastAU = P.au[P.au.length - 1], auR = lastAU ? C.classifyAU(Math.floor(lastAU.x), lastAU.y) : null;
+  const lastAU = P.au[P.au.length - 1], auR = lastAU && (gest.tipo_gravidez || 'unica') === 'unica' ? C.classifyAU(Math.floor(lastAU.x), lastAU.y) : null;
   const lastG = P.gw[P.gw.length - 1], gR = lastG && cat ? C.classifyGWG(cat, C.semanaCurva(Math.floor(lastG.x), Math.round((lastG.x - Math.floor(lastG.x)) * 7)), lastG.y, { adolescente: idade != null && idade < 19, gemelar: gest.tipo_gravidez !== 'unica' }) : null;
-  const pill = r => !r ? '' : r.pos === 'dentro' ? '<span class="pill g">Dentro da faixa</span>' : r.pos === 'individual' ? '<span class="pill v">Orientação individual</span>' : `<span class="pill w">${r.pos === 'acima' ? 'Acima' : 'Abaixo'} da faixa</span>`;
-  return `<p class="muted" style="font-size:13px;margin:2px 2px 12px">As mesmas curvas da Caderneta da Gestante. A faixa colorida é o esperado; seus pontos vêm das consultas registradas.</p>
+  const pill = r => !r ? '' : r.pos === 'dentro' ? '<span class="pill g">Dentro da referência</span>' : r.pos === 'individual' ? '<span class="pill v">Orientação individual</span>' : `<span class="pill w">${r.pos === 'acima' ? 'Acima' : 'Abaixo'} da referência</span>`;
+  const multipla = gest.tipo_gravidez && gest.tipo_gravidez !== 'unica', gm = C.GWG_GEMEOS;
+  const avisoMult = multipla ? `<div class="alert atencao"><div class="ai">👶👶</div><div><b class="t">Curvas feitas para gestação de um bebê</b>
+      <p>A Caderneta avisa que as curvas de altura uterina e de ganho de peso foram feitas para adultas com gestação de um bebê, e que na gestação múltipla a equipe orienta de forma individual. Por isso o app mostra seus registros sem a faixa de referência e não gera alertas a partir delas.</p>
+      ${gest.tipo_gravidez === 'gemelar' && cat && gm[cat] ? `<p style="margin:0">Referência internacional, só para conversar com a equipe: para gêmeos, o ${esc(gm.fonte)} sugere ganho total de <b>${gm[cat].map(x => x.toFixed(1).replace('.', ',')).join(' a ')} kg</b> para o seu IMC pré-gestacional.</p>` : ''}</div></div>` : '';
+  return `${avisoMult}<p class="muted" style="font-size:13px;margin:2px 2px 12px">As mesmas curvas da Caderneta da Gestante, válidas para gestação de um bebê. A faixa colorida é a referência; seus pontos vêm das consultas registradas. Ficar fora da faixa não é diagnóstico: é um motivo para conversar com a equipe.</p>
     <div class="card"><h3>📏 Altura uterina ${pill(auR)}</h3>
       <span class="muted" style="font-size:12px">Faixa esperada (percentis 10 a 90) por idade gestacional, de 16 a 40 semanas.</span>
       <canvas id="g-au" height="220" style="margin-top:10px" role="img" aria-label="Gráfico de altura uterina por idade gestacional"></canvas>
@@ -682,7 +695,7 @@ function recCurvas() {
         <div class="legend"><span><i style="background:rgba(92,132,104,.28)"></i>Faixa recomendada (${C.GWG[cat].faixa})</span><span><i style="background:#6a4664"></i>Seu ganho</span></div>
         ${gR && gR.msg ? `<p style="font-size:13px;margin:10px 0 0">${esc(gR.msg)}</p>` : ''}
         ${!P.gw.length ? '<p class="muted" style="font-size:12.5px;text-align:center;margin:8px 0 0">Registre o <b>peso</b> nas consultas para ver sua curva.</p>' : ''}
-        <p class="muted" style="font-size:11px;margin:10px 0 0">Referência: Caderneta 2026 / Kac et al., Am J Clin Nutr 2021. Faixa semana a semana copiada das curvas oficiais da Caderneta. Como na Caderneta: 1 a 3 dias conta a semana completa; 4 a 6 dias, a semana seguinte. Curvas válidas para gestação de um bebê em adultas.</p>`
+        <p class="muted" style="font-size:11px;margin:10px 0 0">Referência: Caderneta 2026 / Kac et al., Am J Clin Nutr 2021. Faixa semana a semana copiada das curvas oficiais da Caderneta. Como na Caderneta: 1 a 3 dias conta a semana completa; 4 a 6 dias, a semana seguinte. Curvas válidas para gestação de um bebê em adultas; na adolescência e na gestação múltipla, a orientação é individual.</p>`
       : `<p class="muted" style="font-size:13px;margin:8px 0">Para calcular sua faixa, informe sua altura e o peso de antes da gravidez:</p>
         <div class="row"><input class="in" id="cv-alt" type="number" inputmode="decimal" placeholder="Altura (cm)" aria-label="Altura em cm"><input class="in" id="cv-pp" type="number" inputmode="decimal" step="0.1" placeholder="Peso antes (kg)" aria-label="Peso antes da gravidez em kg"></div>
         <button class="btn full sm" onclick="saveIMC()">Calcular minha faixa</button>`}</div>
@@ -701,19 +714,20 @@ function gOpts(xt, yt, xmin, xmax, extra = {}) {
 }
 function drawCurvas() {
   const gest = S().gestacao, P = curvaPontos(), band = 'rgba(162,106,134,.22)', line = 'rgba(162,106,134,.55)', me = '#6a4664';
+  const mult = gest.tipo_gravidez && gest.tipo_gravidez !== 'unica', semFaixa = ds => mult ? ds.filter(d => d.label === 'Você' || d.label === 'Sistólica' || d.label === 'Diastólica' || /^\d+$/.test(d.label)) : ds;
   const wks = []; for (let w = C.AU_SEMANAS[0]; w <= C.AU_SEMANAS[1]; w++) wks.push(w);
-  chart('g-au', { type: 'line', data: { datasets: [
+  chart('g-au', { type: 'line', data: { datasets: semFaixa([
     { label: 'P90', data: wks.map(w => ({ x: w, y: C.auRef(w).p90 })), borderColor: line, borderWidth: 1, pointRadius: 0, fill: '+1', backgroundColor: band, tension: .3 },
     { label: 'P10', data: wks.map(w => ({ x: w, y: C.auRef(w).p10 })), borderColor: line, borderWidth: 1, pointRadius: 0, fill: false, tension: .3 },
     { label: 'P50', data: wks.map(w => ({ x: w, y: C.auRef(w).p50 })), borderColor: line, borderWidth: 1.5, borderDash: [5, 4], pointRadius: 0, tension: .3 },
-    { label: 'Você', data: P.au.filter(p => p.x >= 12), borderColor: me, backgroundColor: me, borderWidth: 2.5, pointRadius: 5, showLine: true, tension: .2 }] }, options: gOpts('Idade gestacional (semanas)', 'cm', 16, 40) });
+    { label: 'Você', data: P.au.filter(p => p.x >= 12), borderColor: me, backgroundColor: me, borderWidth: 2.5, pointRadius: 5, showLine: true, tension: .2 }]) }, options: gOpts('Idade gestacional (semanas)', 'cm', 16, 40) });
   const imc = C.bmi(gest.peso_pre_kg, gest.altura_cm);
   if (imc) {
     const cat = C.bmiCat(imc), ws = []; for (let w = 0; w <= 40; w++) ws.push(w);
-    chart('g-peso', { type: 'line', data: { datasets: [
+    chart('g-peso', { type: 'line', data: { datasets: semFaixa([
       { label: 'Máximo', data: ws.map(w => ({ x: w, y: C.gwgRange(cat, w)[1] })), borderColor: 'rgba(92,132,104,.6)', borderWidth: 1, pointRadius: 0, fill: '+1', backgroundColor: 'rgba(92,132,104,.2)' },
       { label: 'Mínimo', data: ws.map(w => ({ x: w, y: C.gwgRange(cat, w)[0] })), borderColor: 'rgba(92,132,104,.6)', borderWidth: 1, pointRadius: 0, fill: false },
-      { label: 'Você', data: P.gw, borderColor: me, backgroundColor: me, borderWidth: 2.5, pointRadius: 5, showLine: true, tension: .2 }] }, options: gOpts('Idade gestacional (semanas)', 'ganho (kg)', 0, 40) });
+      { label: 'Você', data: P.gw, borderColor: me, backgroundColor: me, borderWidth: 2.5, pointRadius: 5, showLine: true, tension: .2 }]) }, options: gOpts('Idade gestacional (semanas)', 'ganho (kg)', 0, 40) });
   }
   if (P.pa.length) {
     const x0 = Math.max(0, Math.floor(P.pa[0].x) - 2), x1 = Math.min(42, Math.ceil(P.pa[P.pa.length - 1].x) + 2);
@@ -1014,6 +1028,7 @@ const FAQS = [
   ['Tenho direito a acompanhante?', 'Sim. A lei garante acompanhante de sua escolha durante o pré-parto, parto e pós-parto, no SUS e na rede privada (Lei 11.108/2005).'],
   ['Qual a diferença entre DUM e ultrassom para a idade gestacional?', 'A DUM depende de lembrar a data e de ciclos regulares. O ultrassom do 1º trimestre (idealmente 7 a 12 semanas) mede o bebê e é mais preciso — por isso é o mais usado para datar a gestação.']];
 function renderHelp() {
+  if (fase() !== 'gestacao') return renderHelpFase();
   const p = S().profile;
   $('pg-help').innerHTML = `<div class="section-t"><i class="ph ph-first-aid-kit"></i> Emergência</div>
     <button class="btn full" style="background:var(--bad);margin-bottom:10px" onclick="modalDangerCheck()">🚨 Estou sentindo algo — o que faço?</button>
@@ -1046,20 +1061,27 @@ function renderMe() {
   const p = S().profile, g = ga(), gest = S().gestacao, plus = Store.isPlus(), cmp = C.compareDUMxUSG(gest);
   const item = (ic, t, s, act) => `<button class="qa" onclick="${act}"><span class="qi"><i class="ph ${ic}"></i></span><span class="qt"><b>${t}</b><span>${s}</span></span><i class="ph ph-caret-right chev"></i></button>`;
   $('pg-me').innerHTML = `<div class="section-t"><i class="ph ph-heart"></i> Eu</div>
-    <div class="card" style="text-align:center;background:var(--grad);color:#fff"><div style="font-size:44px">🪺</div><h2 style="color:#fff;margin:6px 0 2px">${esc(p.nome_social || p.nome_completo)}</h2>
-      <span style="opacity:.92;font-size:13.5px">${g.w} semanas${bebe() ? ' · esperando ' + esc(cap(bebe())) : ''}</span>
-      <div style="display:flex;justify-content:center;gap:24px;margin-top:12px"><div><div style="font-family:var(--serif);font-size:24px">💧 ${Store.game.gotas || 0}</div><div style="font-size:11px;opacity:.9">gotas</div></div><div><div style="font-family:var(--serif);font-size:24px">🏅 ${(Store.game.conquistas || []).length}/${BADGES.length}</div><div style="font-size:11px;opacity:.9">conquistas</div></div></div></div>
-    ${plus ? `<div class="card" style="display:flex;align-items:center;gap:12px"><div style="font-size:28px">✨</div><div style="flex:1"><b>Ninho+ ativo</b><div class="muted" style="font-size:12.5px">${S().meta.planInfo && S().meta.planInfo.periodo_fim ? 'Renova em ' + fmt(S().meta.planInfo.periodo_fim) : 'Todos os recursos liberados'}</div></div><button class="btn sec sm" onclick="modalPremium()">Gerenciar</button></div>`
-      : `<div class="card" style="background:var(--grad);color:#fff"><b style="font-size:16px">✨ Conheça o Ninho+</b><div style="font-size:13px;opacity:.92;margin:4px 0 12px">Exames, ultrassons, diário em casa, medicação, memórias, plano de parto e resumo em PDF.</div><button class="btn full" style="background:#fff;color:var(--violet-d)" onclick="modalPremium()">Ver recursos</button></div>`}
-    <div class="card"><h3>📅 Datas da gestação</h3><dl class="kv" style="margin-top:8px">
+    <div class="card" style="text-align:center;background:var(--grad);color:#fff"><div class="ilu-eu" role="button" tabindex="0" onclick="modalTons()" title="Mudar ilustração">${fase() === 'perda' ? Ilustra.cuidado({ w: 76 }) : Ilustra.familia(Object.assign({}, Store.prefs.tons, { bebe: tonsBebes() }), { w: 150 })}</div><h2 style="color:#fff;margin:6px 0 2px">${esc(p.nome_social || p.nome_completo)}</h2>
+      <span style="opacity:.92;font-size:13.5px">${fase() === 'gestacao' ? `${g.w} semanas${bebe() ? ' · esperando ' + esc(cap(bebe())) : ''}` : fase() === 'puerperio' ? `${diaPuerperio()}º dia do pós-parto` : 'Cuidando de você'}</span>
+      ${fase() === 'perda' ? '</div>' : `<div style="display:flex;justify-content:center;gap:24px;margin-top:12px"><div><div style="font-family:var(--serif);font-size:24px">💧 ${Store.game.gotas || 0}</div><div style="font-size:11px;opacity:.9">gotas</div></div><div><div style="font-family:var(--serif);font-size:24px">🏅 ${(Store.game.conquistas || []).length}/${BADGES.length}</div><div style="font-size:11px;opacity:.9">conquistas</div></div></div></div>`}
+    ${plus ? `<div class="card" style="display:flex;align-items:center;gap:12px"><div style="font-size:28px">✨</div><div style="flex:1"><b>Ninho+ ativo</b><div class="muted" style="font-size:12.5px">${esc(planoResumo())}</div></div><button class="btn sec sm" onclick="modalPremium()">Gerenciar</button></div>`
+      : fase() === 'perda' ? '' : `<div class="card" style="background:var(--grad);color:#fff"><b style="font-size:16px">✨ Conheça o Ninho+</b><div style="font-size:13px;opacity:.92;margin:4px 0 12px">Diário da barriga com vídeo, kit do parto, exames, família vendo as fotos, plano de parto e mais.</div><button class="btn full" style="background:#fff;color:var(--violet-d)" onclick="modalPremium()">${Store.trialAvailable() ? `Experimentar ${CFG.TESTE_DIAS || 7} dias grátis` : 'Ver planos'}</button></div>`}
+    ${fase() === 'perda' ? '' : `<div class="card"><h3>📅 Datas da gestação</h3><dl class="kv" style="margin-top:8px">
       ${gest.usg_data ? `<dt>1º ultrassom</dt><dd>${fmt(gest.usg_data)} · ${gest.usg_ig_semanas}s${gest.usg_ig_dias || 0}d</dd>` : ''}${gest.dum ? `<dt>DUM</dt><dd>${fmt(gest.dum)}</dd>` : ''}${gest.dpp_informada ? `<dt>DPP informada</dt><dd>${fmt(gest.dpp_informada)}</dd>` : ''}
       <dt>IG calculada por</dt><dd>${metodoLabel(gest.metodo_ig)}</dd><dt>DPP</dt><dd>${fmt(g.dpp)} · ${Math.max(0, C.diffDays(g.dpp, todayISO()))} dias</dd></dl>
       ${cmp ? `<p class="muted" style="font-size:12px;margin:8px 0 0">DUM × ultrassom: ${cmp.diff} dia(s) de diferença (limite ${cmp.limite}). ${cmp.recomenda === 'usg' ? 'A regra indica seguir o ultrassom.' : 'Dentro do limite.'}</p>` : ''}
-      <button class="btn sec full sm" style="margin-top:10px" onclick="A.setupDraft={};showSetup('gest')">Alterar datação</button></div>
-    ${Store.can('memorias') ? memoriasCard() : lockRow('📔', 'Diário de memórias', 'Fotos da barriga semana a semana')}
-    ${Store.can('plano_parto') ? `<div class="card"><h3>📝 Plano de parto</h3><p class="muted" style="font-size:13px;margin:6px 0 12px">Suas preferências para levar à maternidade.</p><button class="btn full" onclick="modalBirthPlan()">${Object.keys(gest.plano_parto || {}).length ? '✏️ Editar' : 'Criar meu plano'}</button>${Object.keys(gest.plano_parto || {}).length ? '<button class="btn sec full sm" style="margin-top:8px" onclick="printBirthPlan()">🖨️ Imprimir</button>' : ''}</div>` : lockRow('📝', 'Plano de parto', 'Preferências para levar à maternidade')}
-    ${plus ? `<div class="card"><h3>📄 Resumo da gestação</h3><p class="muted" style="font-size:13px;margin:6px 0 12px">Identificação, consultas, curvas, exames e vacinas num documento para imprimir ou salvar em PDF.</p><button class="btn full" onclick="printSummary()">🖨️ Gerar resumo</button></div>` : lockRow('📄', 'Resumo em PDF', 'Toda a gestação num documento para o médico')}
+      <button class="btn sec full sm" style="margin-top:10px" onclick="A.setupDraft={};showSetup('gest')">Alterar datação</button></div>`}
+    ${faseCardEu()}
+    <button class="qa" style="margin-bottom:12px" onclick="modalFamilia()"><span class="qi"><i class="ph ph-users-three"></i></span><span class="qt"><b>Família por perto</b><span>Convide quem você ama para acompanhar as semanas</span></span><i class="ph ph-caret-right chev"></i></button>
+    ${g.w >= 28 && fase() === 'gestacao' ? `<button class="qa" style="margin-bottom:12px" onclick="modalKit()"><span class="qi"><i class="ph ph-suitcase-rolling"></i></span><span class="qt"><b>Kit do parto</b><span>Quando ir, contrações, mala e “estou indo”</span></span><i class="ph ph-caret-right chev"></i></button>` : ''}
+    ${Store.can('memorias') ? memoriasCard() : fase() === 'perda' ? '' : lockRow('📸', 'Diário da barriga', 'Uma foto por semana e o vídeo da sua evolução')}
+    ${fase() !== 'gestacao' ? '' : Store.can('plano_parto') ? `<div class="card"><h3>📝 Plano de parto</h3><p class="muted" style="font-size:13px;margin:6px 0 12px">Suas preferências para levar à maternidade.</p><button class="btn full" onclick="modalBirthPlan()">${Object.keys(gest.plano_parto || {}).length ? '✏️ Editar' : 'Criar meu plano'}</button>${Object.keys(gest.plano_parto || {}).length ? '<button class="btn sec full sm" style="margin-top:8px" onclick="printBirthPlan()">🖨️ Imprimir</button>' : ''}</div>` : lockRow('📝', 'Plano de parto', 'Preferências para levar à maternidade')}
+    ${plus ? `<div class="card"><h3>📄 Resumo da gestação</h3><p class="muted" style="font-size:13px;margin:6px 0 12px">Identificação, consultas, curvas, exames e vacinas num documento para imprimir ou salvar em PDF.</p><button class="btn full" onclick="printSummary()">🖨️ Gerar resumo</button></div>` : (fase() === 'perda' ? '' : lockRow('📄', 'Resumo em PDF', 'Toda a gestação num documento para o médico'))}
+    ${fase() === 'perda' ? '' : indicacaoCard()}
     <div class="section-t"><i class="ph ph-gear"></i> Configurações</div>
+    ${item('ph-ticket', 'Tenho um código', 'Presente ou indicação de uma amiga', 'modalCodigo()')}
+    ${item('ph-palette', 'Ilustrações', 'Tom de pele do bebê e da família', 'modalTons()')}
+    ${fase() === 'gestacao' ? item('ph-leaf', 'Passei por uma perda', 'Um modo acolhedor, sem semanas nem lembretes', 'modalPerda()') : ''}
     ${item('ph-identification-card', 'Identificação', 'Dados da Caderneta e contato de emergência', 'modalIdent()')}
     ${item('ph-bell', 'Notificações e lembretes', Notify.permission() === 'granted' ? 'Ativadas' : 'Desativadas', 'modalNotif()')}
     ${item('ph-shield-check', 'Privacidade e dados', 'Consentimentos, baixar ou excluir dados', 'modalPrivacy()')}
@@ -1070,14 +1092,6 @@ function renderMe() {
 function modalIdent() { const p = S().profile; openModal('📋 Identificação', identFields(p, S().gestacao, false) + `<button class="btn full" onclick="saveIdent(false)">Salvar</button>`); }
 
 /* ---------- memórias (Plus) ---------- */
-function memoriasCard() {
-  const ms = L('memorias').slice().sort((a, b) => b.created_at.localeCompare(a.created_at));
-  return `<div class="card"><h3>📔 Diário de memórias</h3><div class="row" style="margin:10px 0"><button class="btn sec sm" onclick="modalMemoria('foto')">📷 Foto da barriga</button><button class="btn sec sm" onclick="modalMemoria('momento')">✨ Momento</button></div>
-    ${ms.length ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${ms.map(m => `<div style="background:var(--grad-soft);border-radius:16px;overflow:hidden;border:1px solid var(--line);position:relative">
-      <button class="x" style="position:absolute;top:4px;right:4px;font-size:15px;color:#fff;background:rgba(0,0,0,.35);border-radius:50%;width:26px;height:26px;z-index:1" aria-label="Excluir memória" onclick="confirmBox('Excluir esta memória?',()=>{Store.remove('memorias','${m.id}');renderMe()},{danger:true,yes:'Excluir'})">×</button>
-      ${m.arquivo_path ? `<img data-path="${esc(m.arquivo_path)}" alt="" style="width:100%;height:120px;object-fit:cover;display:block;background:var(--line)">` : '<div style="height:120px;display:flex;align-items:center;justify-content:center;font-size:40px">✨</div>'}
-      <div style="padding:9px"><b style="font-size:13px;display:block">${esc(m.titulo || (m.semana != null ? 'Semana ' + m.semana : 'Memória'))}</b><span style="font-size:11.5px;color:var(--muted)">${m.texto ? esc(m.texto) + ' · ' : ''}${fmt(m.created_at)}</span></div></div>`).join('')}</div>` : '<p class="muted" style="font-size:13px;text-align:center">Seu álbum começa aqui 💜</p>'}</div>`;
-}
 function modalMemoria(tipo) {
   if (needPlus('memorias')) return; const g = ga();
   openModal(tipo === 'foto' ? '📷 Foto da barriga' : '✨ Momento especial', `<label class="lbl" for="mm-t">Título</label><input class="in" id="mm-t" maxlength="120" placeholder="${tipo === 'foto' ? 'Barriguinha de ' + g.w + ' semanas' : 'Primeiro chute!'}">
@@ -1138,20 +1152,6 @@ function printSummary() {
 }
 
 /* =================== PLANO (Grátis x Plus) =================== */
-function modalPremium() {
-  const plus = Store.isPlus(), local = Store.backend.mode === 'local';
-  const F = [['🔬', 'Exames da Caderneta', 'Resultados, gráficos e alertas de valores fora do esperado'], ['🖼️', 'Ultrassons com fotos', 'Álbum com dados do laudo'], ['🏠', 'Diário em casa', 'Pressão, glicemia, peso, temperatura — com lembretes'], ['💊', 'Medicação', 'Notificação na hora de cada dose'],
-    ['📝', 'Sintomas e anotações', 'Histórico e perguntas para a consulta'], ['📔', 'Memórias', 'Fotos da barriga semana a semana'], ['🗒️', 'Plano de parto', 'Documento para a maternidade'], ['📄', 'Resumo em PDF', 'Toda a gestação num documento']];
-  openModal('✨ Ninho+', `${plus ? `<div class="alert allgood"><div class="ai">💜</div><div><b class="t" style="color:var(--good)">Você tem o Ninho+</b><p style="margin:0">Obrigado por cuidar com a gente.</p></div></div>` : ''}
-    <div class="card" style="background:var(--grad-soft)"><b>Grátis, para sempre</b><p class="muted" style="font-size:12.5px;margin:4px 0 0">Acompanhamento semana a semana, consultas, <b>curvas da Caderneta</b> (altura uterina e ganho de peso), jornada com exames e vacinas, contador de movimentos, alertas, sinais de alerta e cartão de emergência.</p></div>
-    ${F.map(f => `<div class="list-item"><div class="li-ic">${f[0]}</div><div class="li-t"><b>${f[1]}</b><span>${f[2]}</span></div><div style="color:var(--violet)">✓</div></div>`).join('')}
-    ${plus ? (local ? '<button class="btn sec full" style="margin-top:14px" onclick="setDemoPlan(\'free\')">Voltar ao grátis (modo local)</button>' : '<p class="muted" style="font-size:12.5px;text-align:center;margin-top:12px">Para cancelar ou trocar o cartão, use o link do Mercado Pago enviado por e-mail.</p>')
-      : `<div style="text-align:center;margin:14px 0"><div style="font-family:var(--serif);font-size:28px;color:var(--violet)">${esc(CFG.PRECOS.mensal)}<span style="font-size:14px;color:var(--muted)">/mês</span></div><div class="muted" style="font-size:12px">ou ${esc(CFG.PRECOS.anual)}/ano · cancele quando quiser</div></div>
-      ${local ? `<button class="btn full" onclick="setDemoPlan('plus')">✨ Ativar Ninho+ (demonstração local)</button>` : `<button class="btn full" id="ck-m" onclick="checkout('mensal')">Assinar mensal</button><button class="btn sec full" id="ck-a" style="margin-top:8px" onclick="checkout('anual')">Assinar anual</button>`}`}
-    <p class="muted" style="font-size:11.5px;text-align:center;margin-top:10px">Recursos de segurança são sempre gratuitos. Se a assinatura acabar, seus dados continuam seus para ver, baixar e excluir.</p>`);
-}
-async function setDemoPlan(p) { await Store.backend.setDemoPlan(S().uid, p); await Store.refreshPlan(); closeModal(); toast(p === 'plus' ? '✨ Ninho+ ativado (demo)' : 'Plano grátis'); renderAll(); scheduleReminders(); }
-async function checkout(ciclo) { await busy(ciclo === 'anual' ? 'ck-a' : 'ck-m', async () => { try { const url = await Store.backend.checkout(ciclo); if (!/^https:\/\//.test(url || '')) throw new Error('link'); location.href = url; } catch (e) { toast('Não foi possível abrir o pagamento agora. Tente novamente.'); } }); }
 
 /* =================== NOTIFICAÇÕES =================== */
 async function enableNotifications() {
@@ -1164,7 +1164,8 @@ async function enableNotifications() {
 function scheduleReminders() {
   if (!S() || !S().gestacao) return;
   const c = ctx(), ok = (Store.consentOf('notificacoes') || { aceito: true }).aceito !== false;
-  const list = ok ? Notify.compute(c) : [];
+  const f = fase();
+  const list = !ok || f === 'perda' ? [] : f === 'puerperio' ? Notify.compute(c).filter(r => ['medicacao', 'medicao'].includes(r.tipo)) : Notify.compute(c);
   Notify.scheduleLocal(list);
   clearTimeout(A._remT); A._remT = setTimeout(() => Notify.syncRemote(Store.backend, S().uid, list).catch(e => console.warn('lembretes', e)), 3000);
   return list;
@@ -1233,6 +1234,8 @@ async function boot() {
   Store.on(ev => { if (ev === 'sync' && S() && !$('main').classList.contains('hidden')) { renderBanners(); if (S().gestacao) renderHeader(); } if (ev === 'plan' && S() && S().gestacao) renderAll(); if (ev === 'recovery') showAuth('recovery'); if (ev === 'signedout') showAuth('login'); });
   window.addEventListener('online', () => Store.sync().catch(() => { }));
   document.addEventListener('visibilitychange', () => { if (document.hidden) Store.persistNow(); else if (S()) { Store.sync().catch(() => { }); if (S().gestacao && !$('main').classList.contains('hidden')) { renderAll(); scheduleReminders(); } } });
+  const pg = (location.search.match(/pagamento=(ok|pendente|falhou)/) || [])[1];
+  if (pg) { history.replaceState(null, '', location.pathname); A._ofertaFeita = true; setTimeout(() => retornoPagamento(pg), 300); }
   if (/assinatura=retorno/.test(location.search)) { history.replaceState(null, '', location.pathname); setTimeout(() => Store.refreshPlan().then(() => { renderAll(); toast(Store.isPlus() ? '✨ Ninho+ ativo!' : 'Pagamento em processamento — avisaremos quando ativar'); }), 1500); }
   if (isRecovery || Store.recovery) return showAuth('recovery');
   route();

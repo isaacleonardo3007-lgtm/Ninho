@@ -152,31 +152,31 @@
     const n = parseFloat(String(v).replace(',', '.'));
     switch (id) {
       case 'hb': if (isNaN(n)) return null;
-        if (n < 8) return { sev: 'alta', msg: `Hemoglobina ${n} g/dL indica anemia importante. Procure sua equipe com prioridade.` };
-        if (n < 11) return { sev: 'media', msg: `Hemoglobina ${n} g/dL está abaixo de 11 (anemia na gestação). Mostre à sua equipe — o tratamento costuma ser simples.` };
+        if (n < 8) return { sev: 'alta', msg: `Hemoglobina ${n} g/dL ficou bem abaixo da referência da gestação (11 g/dL). Orientação: leve o resultado à sua equipe com prioridade.` };
+        if (n < 11) return { sev: 'media', msg: `Hemoglobina ${n} g/dL ficou abaixo da referência da gestação (11 g/dL). Orientação: mostre o resultado à sua equipe.` };
         return { sev: 'ok' };
       case 'glicemia_jejum': if (isNaN(n)) return null;
-        if (n >= 126) return { sev: 'alta', msg: `Glicemia de jejum ${n} mg/dL (≥ 126) sugere diabetes. Leve o resultado à equipe o quanto antes.` };
-        if (n >= 92) return { sev: 'media', msg: `Glicemia de jejum ${n} mg/dL (92 a 125) é critério de diabetes gestacional. Converse com sua equipe.` };
+        if (n >= 126) return { sev: 'alta', msg: `Glicemia de jejum ${n} mg/dL ficou igual ou acima de 126 mg/dL. Orientação: leve o resultado à sua equipe o quanto antes.` };
+        if (n >= 92) return { sev: 'media', msg: `Glicemia de jejum ${n} mg/dL ficou entre 92 e 125 mg/dL, faixa que a Caderneta pede para avaliar. Orientação: converse com sua equipe.` };
         return { sev: 'ok' };
-      case 'totg_0': if (isNaN(n)) return null; return n >= 92 ? { sev: 'media', msg: `TOTG jejum ${n} mg/dL (≥ 92): critério de diabetes gestacional.` } : { sev: 'ok' };
-      case 'totg_1h': if (isNaN(n)) return null; return n >= 180 ? { sev: 'media', msg: `TOTG 1 hora ${n} mg/dL (≥ 180): critério de diabetes gestacional.` } : { sev: 'ok' };
-      case 'totg_2h': if (isNaN(n)) return null; return n >= 153 ? { sev: 'media', msg: `TOTG 2 horas ${n} mg/dL (≥ 153): critério de diabetes gestacional.` } : { sev: 'ok' };
-      case 'tsh': if (isNaN(n)) return null; return n > 4 ? { sev: 'media', msg: `TSH ${n} mUI/L acima do esperado para a gestação. Mostre à sua equipe.` } : { sev: 'ok' };
-      case 'sifilis': return v === 'Reagente' ? { sev: 'alta', msg: 'Sífilis reagente: o tratamento com penicilina precisa começar o quanto antes, e a parceria também deve ser testada e tratada. É gratuito no SUS.' } : v ? { sev: 'ok' } : null;
-      case 'hiv': return v === 'Reagente' ? { sev: 'alta', msg: 'HIV reagente: com acompanhamento e tratamento, a chance de transmissão para o bebê fica muito baixa. Procure sua equipe para iniciar o cuidado.' } : v ? { sev: 'ok' } : null;
+      case 'totg_0': if (isNaN(n)) return null; return n >= 92 ? { sev: 'media', msg: `TOTG jejum ${n} mg/dL ficou igual ou acima da referência (92). Orientação: mostre à sua equipe.` } : { sev: 'ok' };
+      case 'totg_1h': if (isNaN(n)) return null; return n >= 180 ? { sev: 'media', msg: `TOTG 1 hora ${n} mg/dL ficou igual ou acima da referência (180). Orientação: mostre à sua equipe.` } : { sev: 'ok' };
+      case 'totg_2h': if (isNaN(n)) return null; return n >= 153 ? { sev: 'media', msg: `TOTG 2 horas ${n} mg/dL ficou igual ou acima da referência (153). Orientação: mostre à sua equipe.` } : { sev: 'ok' };
+      case 'tsh': if (isNaN(n)) return null; return n > 4 ? { sev: 'media', msg: `TSH ${n} mUI/L ficou acima da referência usada na gestação. Orientação: mostre à sua equipe.` } : { sev: 'ok' };
+      case 'sifilis': return v === 'Reagente' ? { sev: 'alta', msg: 'Resultado reagente para sífilis. Orientação: procure sua equipe o quanto antes; a Caderneta orienta que a parceria também faça o teste. O cuidado é gratuito no SUS.' } : v ? { sev: 'ok' } : null;
+      case 'hiv': return v === 'Reagente' ? { sev: 'alta', msg: 'Resultado reagente para HIV. Orientação: procure sua equipe para iniciar o acompanhamento; com cuidado no pré-natal, a chance de transmissão para o bebê fica muito baixa.' } : v ? { sev: 'ok' } : null;
       case 'hepb': case 'hepc': case 'htlv': case 'chagas': case 'tuberculose':
-        return v === 'Reagente' ? { sev: 'media', msg: `${EXAME[id].nome}: resultado reagente. Sua equipe vai orientar os próximos passos e os cuidados com o bebê.` } : v ? { sev: 'ok' } : null;
-      case 'toxo_igm': return v === 'Reagente' ? { sev: 'alta', msg: 'Toxoplasmose IgM reagente pode indicar infecção recente. Procure sua equipe para avaliação e tratamento.' } : v ? { sev: 'ok' } : null;
+        return v === 'Reagente' ? { sev: 'media', msg: `${EXAME[id].nome}: resultado reagente. Orientação: leve à sua equipe, que vai explicar os próximos passos.` } : v ? { sev: 'ok' } : null;
+      case 'toxo_igm': return v === 'Reagente' ? { sev: 'alta', msg: 'Toxoplasmose IgM reagente. Orientação: leve o resultado à sua equipe com prioridade.' } : v ? { sev: 'ok' } : null;
       case 'toxo_igg': return v === 'Não reagente' ? { sev: 'info', msg: 'Toxoplasmose IgG não reagente: você ainda não teve contato. Capriche nos cuidados (carne bem passada, lavar bem frutas e verduras, evitar fezes de gato) e repita o exame no 2º e 3º trimestres.' } : v ? { sev: 'ok' } : null;
-      case 'abo_rh': return /-$/.test(v || '') ? { sev: 'info', msg: 'Rh negativo: você precisa do Coombs indireto no pré-natal e pode precisar de imunoglobulina anti-D. Confirme com sua equipe.' } : v ? { sev: 'ok' } : null;
-      case 'coombs': return v === 'Positivo' ? { sev: 'alta', msg: 'Coombs indireto positivo precisa de avaliação especializada. Procure sua equipe.' } : v ? { sev: 'ok' } : null;
-      case 'urocultura': return v === 'Positiva' ? { sev: 'media', msg: 'Urocultura positiva: na gestação, infecção urinária deve ser tratada mesmo sem sintomas. Leve à equipe.' } : v ? { sev: 'ok' } : null;
+      case 'abo_rh': return /-$/.test(v || '') ? { sev: 'info', msg: 'Rh negativo: a Caderneta prevê o exame de Coombs indireto no pré-natal. Orientação: converse com sua equipe sobre os cuidados.' } : v ? { sev: 'ok' } : null;
+      case 'coombs': return v === 'Positivo' ? { sev: 'alta', msg: 'Coombs indireto positivo. Orientação: procure sua equipe com prioridade.' } : v ? { sev: 'ok' } : null;
+      case 'urocultura': return v === 'Positiva' ? { sev: 'media', msg: 'Urocultura positiva. Orientação: leve à sua equipe mesmo sem sintomas.' } : v ? { sev: 'ok' } : null;
       case 'eletroforese': return v && v !== 'AA' ? { sev: 'info', msg: `Eletroforese ${v}: converse com sua equipe sobre o significado para você e o bebê.` } : v ? { sev: 'ok' } : null;
       case 'proteinuria': return v && v !== 'Negativa' ? { sev: v === 'Traços' ? 'info' : 'media', msg: `Proteinúria ${v}: leve à equipe, principalmente se a pressão estiver alta ou houver inchaço.` } : v ? { sev: 'ok' } : null;
-      case 'clamidia_gono': return v === 'Detectado' ? { sev: 'media', msg: 'Clamídia/gonorreia detectada: o tratamento é simples e a parceria também deve ser tratada. Procure sua equipe.' } : v ? { sev: 'ok' } : null;
-      case 'plaquetas': if (isNaN(n)) return null; return n < 100 ? { sev: 'alta', msg: `Plaquetas ${n} mil/mm³ (abaixo de 100 mil): mostre à equipe com prioridade.` } : { sev: 'ok' };
-      case 'malaria': return v === 'Positivo' ? { sev: 'alta', msg: 'Malária positiva: procure atendimento para tratamento imediato.' } : v ? { sev: 'ok' } : null;
+      case 'clamidia_gono': return v === 'Detectado' ? { sev: 'media', msg: 'Clamídia/gonorreia detectada. Orientação: procure sua equipe; a parceria também deve ser avaliada.' } : v ? { sev: 'ok' } : null;
+      case 'plaquetas': if (isNaN(n)) return null; return n < 100 ? { sev: 'alta', msg: `Plaquetas ${n} mil/mm³ ficaram abaixo de 100 mil. Orientação: mostre à sua equipe com prioridade.` } : { sev: 'ok' };
+      case 'malaria': return v === 'Positivo' ? { sev: 'alta', msg: 'Resultado positivo para malária. Orientação: procure atendimento imediatamente.' } : v ? { sev: 'ok' } : null;
       default: return null;
     }
   }
@@ -245,8 +245,8 @@
   function classifyAU(...a) { return ptBR(_classifyAU(...a)); }
   function _classifyAU(w, cm) {
     if (w < AU_SEMANAS[0] || w > 42 || !cm) return null; const r = auRef(Math.min(w, 40));
-    if (cm < r.p10) return { sev: 'media', pos: 'abaixo', msg: `Altura uterina ${cm} cm com ${w} semanas ficou abaixo do percentil 10 (${r.p10} cm). Pode ser variação da medida, mas vale avaliar o crescimento do bebê.` };
-    if (cm > r.p90) return { sev: 'media', pos: 'acima', msg: `Altura uterina ${cm} cm com ${w} semanas ficou acima do percentil 90 (${r.p90} cm). Sua equipe pode investigar (líquido, crescimento, gemelaridade).` };
+    if (cm < r.p10) return { sev: 'media', pos: 'abaixo', msg: `Altura uterina ${cm} cm com ${w} semanas ficou abaixo do percentil 10 (${r.p10} cm). Orientação: mostre à sua equipe na próxima consulta.` };
+    if (cm > r.p90) return { sev: 'media', pos: 'acima', msg: `Altura uterina ${cm} cm com ${w} semanas ficou acima do percentil 90 (${r.p90} cm). Orientação: mostre à sua equipe na próxima consulta.` };
     return { sev: 'ok', pos: 'dentro' };
   }
 
@@ -290,8 +290,8 @@
   function _classifyGWG(cat, w, ganho, { adolescente = false, gemelar = false } = {}) {
     if (adolescente || gemelar) return { sev: 'info', pos: 'individual', msg: 'As curvas da Caderneta foram feitas para gestação de um bebê em adultas. Para você, a orientação de ganho de peso é individualizada pela equipe.' };
     const [mn, mx] = gwgRange(cat, w);
-    if (ganho > mx + 0.5) return { sev: 'media', pos: 'acima', mn, mx, msg: `Ganho de ${ganho.toFixed(1)} kg até ${w} semanas está acima da faixa recomendada (${mn.toFixed(1)} a ${mx.toFixed(1)} kg). Não é para perder peso: a Caderneta orienta ganhar cerca de ${Math.round(GWG[cat].taxa * 1000)} g por semana daqui em diante. Converse com sua equipe sobre alimentação e atividade física.` };
-    if (ganho < mn - 0.5) return { sev: 'media', pos: 'abaixo', mn, mx, msg: `Ganho de ${ganho.toFixed(1)} kg até ${w} semanas está abaixo da faixa recomendada (${mn.toFixed(1)} a ${mx.toFixed(1)} kg). Vale conversar com sua equipe na próxima consulta.` };
+    if (ganho > mx + 0.5) return { sev: 'media', pos: 'acima', mn, mx, msg: `Ganho de ${ganho.toFixed(1)} kg até ${w} semanas está acima da faixa de referência da Caderneta (${mn.toFixed(1)} a ${mx.toFixed(1)} kg). Não é para perder peso: a Caderneta orienta ganhar cerca de ${Math.round(GWG[cat].taxa * 1000)} g por semana daqui em diante. Orientação: converse com sua equipe sobre alimentação e atividade física.` };
+    if (ganho < mn - 0.5) return { sev: 'media', pos: 'abaixo', mn, mx, msg: `Ganho de ${ganho.toFixed(1)} kg até ${w} semanas está abaixo da faixa de referência da Caderneta (${mn.toFixed(1)} a ${mx.toFixed(1)} kg). Orientação: converse com sua equipe na próxima consulta.` };
     return { sev: 'ok', pos: 'dentro', mn, mx };
   }
 
@@ -345,10 +345,72 @@
       tips: ['Consultas a cada 15 dias até 36 semanas, depois semanais', 'Vacina VSR a partir de 28 semanas', 'Preste atenção aos movimentos do bebê todos os dias', 'Prepare a mala e conheça a maternidade de referência'] },
   ];
 
+  /* ---------- Tamanho do bebê por semana (comparação com frutas) ---------- */
+  const FRUTAS = { 4: ['🫐', 'semente de papoula'], 5: ['🫐', 'grão de gergelim'], 6: ['🫛', 'lentilha'], 7: ['🫐', 'mirtilo'], 8: ['🫘', 'feijão'], 9: ['🍇', 'uva'], 10: ['🍓', 'morango'], 11: ['🫒', 'azeitona'], 12: ['🍋', 'limão'], 13: ['🫛', 'vagem de ervilha'], 14: ['🍋', 'limão-siciliano'], 15: ['🍎', 'maçã'], 16: ['🥑', 'abacate'], 17: ['🍐', 'pera'], 18: ['🫑', 'pimentão'], 19: ['🍅', 'tomate grande'], 20: ['🍌', 'banana'], 21: ['🥕', 'cenoura'], 22: ['🥥', 'coco pequeno'], 23: ['🥭', 'manga'], 24: ['🌽', 'espiga de milho'], 25: ['🥬', 'couve-flor'], 26: ['🥬', 'alface'], 27: ['🥦', 'brócolis'], 28: ['🍆', 'berinjela'], 29: ['🎃', 'abóbora pequena'], 30: ['🥬', 'repolho'], 31: ['🥥', 'coco'], 32: ['🥔', 'inhame'], 33: ['🍍', 'abacaxi'], 34: ['🍈', 'melão cantaloupe'], 35: ['🍈', 'melão'], 36: ['🥬', 'alface romana'], 37: ['🥬', 'acelga'], 38: ['🎃', 'abóbora'], 39: ['🍉', 'melancia pequena'], 40: ['🍉', 'melancia'] };
+  function frutaDa(w) { let k = Math.max(4, Math.min(40, w)); while (!FRUTAS[k] && k > 4) k--; return FRUTAS[k] || ['🍼', 'seu bebê']; }
+  function artigo(n) { const w = (n || '').toLowerCase().split(' ')[0]; if (['semente', 'vagem', 'couve-flor', 'alface', 'espiga', 'uva', 'pera', 'banana', 'cenoura', 'manga', 'berinjela', 'abóbora', 'maçã', 'lentilha', 'azeitona', 'acelga', 'melancia'].includes(w)) return 'uma'; return /[aã]$/.test(w) ? 'uma' : 'um'; }
+
+  /* ---------- Gestação múltipla ----------
+     A Caderneta 2026 diz que as curvas de ganho de peso foram feitas para adultas com
+     gestação de um bebê e que, na gestação múltipla, a equipe orienta de forma individual.
+     Como referência informativa (nunca como meta automática), o app mostra a faixa
+     provisória do Institute of Medicine (IOM, 2009) para gêmeos, por IMC pré-gestacional.
+     Não há faixa para baixo peso nem para trigêmeos ou mais. */
+  const GWG_GEMEOS = {
+    fonte: 'Institute of Medicine (IOM), 2009 — faixa provisória para gêmeos ao termo',
+    eutrofia: [16.8, 24.5], sobrepeso: [14.1, 22.7], obesidade: [11.3, 19.1], baixo: null,
+  };
+  function bebesDe(tipo) { return tipo === 'gemelar' ? 2 : tipo === 'tripla_mais' ? 3 : 1; }
+
+  /* ---------- Puerpério (Caderneta 2026, Parte VI) ---------- */
+  const PUERPERIO = {
+    dias: 45,                                    // duração física aproximada (Caderneta: "cerca de 45 dias")
+    consultas: [{ id: 'p1', nome: '1ª consulta pós-parto', ate: 7, quando: 'Na primeira semana após a saída da maternidade' },
+                { id: 'p2', nome: '2ª consulta pós-parto', ate: 30, quando: 'Por volta de 30 dias após o parto' }],
+    sinais: [
+      ['sangramento', '🩸', 'Sangramento intenso que encharca o absorvente rapidamente, ou com mau cheiro'],
+      ['febre', '🌡️', 'Febre: temperatura igual ou maior que 37,8 °C'],
+      ['dor', '😣', 'Dor forte e persistente no abdome, na pelve, na cicatriz da cesárea ou nos pontos'],
+      ['infeccao', '🩹', 'Vermelhidão, inchaço, secreção ou mau cheiro na cicatriz ou nos pontos'],
+      ['cabeca', '🤕', 'Dor de cabeça forte ou diferente do habitual'],
+      ['visao', '👁️', 'Visão embaçada, pontos luminosos ou escurecimento'],
+      ['inchaco', '🫲', 'Inchaço repentino no rosto, nas mãos ou nas pernas'],
+      ['pressao', '🩺', 'Pressão alta, medida ou suspeita'],
+      ['peito', '🫁', 'Dor no peito, falta de ar, palpitações ou sensação de desmaio'],
+      ['perna', '🦵', 'Dor, calor ou inchaço em uma das pernas, principalmente na panturrilha'],
+      ['malestar', '😵', 'Mal-estar intenso, tontura, desmaio ou convulsão'],
+      ['urina', '🚽', 'Urina muito reduzida, ou dificuldade ou dor para urinar'],
+      ['mama', '🔥', 'Mama com dor intensa, vermelhidão, área endurecida dolorosa ou febre'],
+      ['mental', '💭', 'Tristeza intensa, ansiedade excessiva, confusão, pensamentos de machucar a si mesma ou ao bebê, ou dificuldade para cuidar de si ou do bebê'],
+    ],
+    comuns: ['Sangramento (lóquios) que diminui aos poucos e pode durar cerca de 42 dias', 'Cólicas leves nos primeiros dias, enquanto o útero volta ao tamanho',
+      'Mamas cheias, quentes ou sensíveis quando o leite chega', 'Desconforto nos pontos ou na cicatriz, que melhora com os dias', 'Cansaço e sono alterado'],
+    emocoes: { blues: 'Baby blues: tristeza leve, choro fácil e sensibilidade nos primeiros dias. É comum e costuma passar sozinho.',
+      depressao: 'Depressão pós-parto: tristeza intensa e persistente, desânimo, culpa excessiva, ansiedade importante ou dificuldade para cuidar de si ou do bebê. Nesses casos, busque a equipe de saúde.' },
+    direitos: ['Registro de nascimento do bebê', 'Caderneta da Criança', 'Licença-maternidade e licença-paternidade', 'Acompanhamento no pós-parto', 'Benefícios sociais, conforme critérios'],
+    fonte: 'Caderneta da Gestante 2026, Parte VI — Puerpério',
+  };
+
+  /* ---------- Perda gestacional e luto (Caderneta 2026, 7.2 e 7.3) ---------- */
+  const PERDA = {
+    direitosSaude: ['Atendimento acolhedor, humanizado e sem julgamentos', 'Informações claras sobre o que aconteceu e sobre o cuidado',
+      'Respeito ao seu tempo, às suas decisões e aos seus sentimentos', 'Ambiente separado das outras gestantes, sempre que possível',
+      'Despedida com o tempo necessário e coleta de lembranças, se você desejar', 'Investigação da causa, conforme indicação clínica',
+      'Escolha sobre rituais fúnebres, com participação da família', 'Apoio psicológico ou psicossocial', 'Acompanhamento pelo SUS, na UBS ou em serviço de referência'],
+    trabalho: [['Após a perda gestacional', '2 semanas de repouso remunerado, com garantia de volta ao trabalho (CLT, art. 395)'],
+               ['Parto de natimorto', 'Licença-maternidade completa, de 120 dias (Constituição, art. 7º, XVIII; CLT, art. 392)']],
+    lutoComum: ['Tristeza profunda', 'Sensação de vazio', 'Saudade intensa', 'Culpa, raiva ou confusão', 'Cansaço emocional e físico', 'Dificuldade de concentração ou de dormir'],
+    procurar: ['Tristeza muito intensa ou que não melhora com o tempo', 'Dificuldade para fazer as atividades do dia a dia', 'Isolamento que persiste',
+      'Crises de ansiedade frequentes', 'Pensamentos de desvalorizar a vida ou de se machucar'],
+    corpo: ['Sangramento intenso que encharca o absorvente rapidamente', 'Febre (37,8 °C ou mais)', 'Dor forte que não melhora', 'Corrimento com mau cheiro'],
+    fonte: 'Caderneta da Gestante 2026, 7.2 e 7.3; Lei 15.139/2025 (Política Nacional de Humanização do Luto Materno e Parental)',
+  };
+
   g.Clin = {
+    GWG_GEMEOS, bebesDe, PUERPERIO, PERDA,
     parseDate, toISODate, today, addDays, diffDays, gaFrom, gaStart, compareDUMxUSG, validateGestation, redatingLimit,
     startFromUSG, startFromDUM, startFromDPP, trimester, CONSULTAS, intervaloConsulta, EXAMES, EXAME, EXAMES_PARTO, interpretExam,
     PA, classifyBP, parseBP, GLI_MOMENTOS, classifyGlucose, BCF, FEBRE, MOV, auRef, AU_SEMANAS, AU_CADERNETA, classifyAU,
-    GWG, GWG_CURVA, bmi, bmiCat, gwgRange, semanaCurva, classifyGWG, ageYears, VACINAS, SINAIS_PERIGO, TRIMESTRES,
+    GWG, GWG_CURVA, bmi, bmiCat, gwgRange, semanaCurva, classifyGWG, ageYears, VACINAS, SINAIS_PERIGO, TRIMESTRES, FRUTAS, frutaDa, artigo,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

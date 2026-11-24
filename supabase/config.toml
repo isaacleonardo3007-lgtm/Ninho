@@ -14,3 +14,12 @@ verify_jwt = false   # protegida por x-cron-secret
 
 [functions.payment-webhook]
 verify_jwt = false   # protegida pela assinatura do Mercado Pago
+
+[functions.presente]
+verify_jwt = false   # pública (quem dá o presente não precisa de conta); valida token/dados
+
+[functions.familia]
+verify_jwt = false   # pública, protegida pelo token do convite (64 caracteres, revogável)
+
+[functions.admin]
+verify_jwt = true    # além do JWT, a função confere privado.admins

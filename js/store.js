@@ -54,15 +54,15 @@
     consultas: { plus: false, cols: ['data', 'ig_semanas', 'ig_dias', 'local', 'profissional', 'pa_sis', 'pa_dia', 'peso_kg', 'altura_uterina_cm', 'bcf_bpm', 'movimentos_fetais', 'apresentacao', 'edema', 'queixas_urinarias', 'perdas_vaginais', 'observacoes', 'proxima_consulta'] },
     vacinas: { plus: false, cols: ['codigo', 'dose', 'data_aplicacao', 'lote', 'local'] },
     movimentos: { plus: false, cols: ['inicio', 'duracao_min', 'contagem'] },
-    exames: { plus: true, cols: ['data', 'codigo', 'nome', 'valor_num', 'valor_txt', 'unidade', 'arquivo_path', 'observacoes'] },
-    ultrassons: { plus: true, cols: ['data', 'tipo', 'ig_usg_semanas', 'ig_usg_dias', 'bcf_bpm', 'peso_fetal_g', 'percentil', 'placenta', 'liquido', 'observacoes', 'arquivo_path'] },
-    monitores: { plus: true, cols: ['nome', 'unidade', 'minimo', 'maximo'] },
-    medicoes: { plus: true, cols: ['tipo', 'monitor_id', 'medido_em', 'sis', 'dia', 'valor', 'momento', 'nota'] },
-    sintomas: { plus: true, cols: ['registrado_em', 'nome', 'emoji', 'intensidade', 'nota'] },
-    medicamentos: { plus: true, cols: ['nome', 'dose', 'horarios', 'ativo'] },
-    doses: { plus: true, cols: ['medicamento_id', 'data', 'horario', 'tomada'] },
-    notas: { plus: true, cols: ['texto', 'resolvida'] },
-    memorias: { plus: true, cols: ['tipo', 'titulo', 'semana', 'texto', 'arquivo_path'] },
+    exames: { plus: true, rec: 'exames', cols: ['data', 'codigo', 'nome', 'valor_num', 'valor_txt', 'unidade', 'arquivo_path', 'observacoes'] },
+    ultrassons: { plus: true, rec: 'ultrassons', cols: ['data', 'tipo', 'ig_usg_semanas', 'ig_usg_dias', 'bcf_bpm', 'peso_fetal_g', 'percentil', 'placenta', 'liquido', 'observacoes', 'arquivo_path'] },
+    monitores: { plus: true, rec: 'monitores', cols: ['nome', 'unidade', 'minimo', 'maximo'] },
+    medicoes: { plus: true, rec: 'monitores', cols: ['tipo', 'monitor_id', 'medido_em', 'sis', 'dia', 'valor', 'momento', 'nota'] },
+    sintomas: { plus: true, rec: 'sintomas', cols: ['registrado_em', 'nome', 'emoji', 'intensidade', 'nota'] },
+    medicamentos: { plus: true, rec: 'medicacao', cols: ['nome', 'dose', 'horarios', 'ativo'] },
+    doses: { plus: true, rec: 'medicacao', cols: ['medicamento_id', 'data', 'horario', 'tomada'] },
+    notas: { plus: true, rec: 'notas', cols: ['texto', 'resolvida'] },
+    memorias: { plus: true, rec: 'memorias', cols: ['tipo', 'titulo', 'semana', 'texto', 'arquivo_path'] },
   };
   const ORDER = ['consultas', 'vacinas', 'movimentos', 'exames', 'ultrassons', 'monitores', 'medicoes', 'sintomas', 'medicamentos', 'doses', 'notas', 'memorias'];
   const GEST_COLS = ['id', 'user_id', 'ativa', 'nome_bebe', 'metodo_ig', 'dum', 'usg_data', 'usg_ig_semanas', 'usg_ig_dias', 'dpp_informada', 'dpp', 'tipo_gravidez', 'planejada', 'gesta', 'para', 'abortos', 'risco', 'altura_cm', 'peso_pre_kg', 'antecedentes', 'plano_parto', 'desfecho', 'created_at', 'updated_at', 'deleted_at'];
@@ -126,8 +126,22 @@
     async signOut() { LS.del('ninho.local.session'); }
     async resetPassword() { return { ok: false, msg: 'No modo local não há envio de e-mail. Crie uma nova conta de teste.' }; }
     async updatePassword() { }
-    async plan(uid) { return { plano: LS.get('ninho.local.plan.' + uid) === 'plus' ? 'plus' : 'free', status: 'active' }; }
+    async plan(uid) {
+      const ate = LS.get('ninho.local.trial.' + uid), teste = !!ate && new Date(ate) > new Date();
+      const plus = LS.get('ninho.local.plan.' + uid) === 'plus' || teste;
+      return { plano: plus ? 'plus' : 'free', status: 'active', assinatura: LS.get('ninho.local.plan.' + uid) === 'plus', acesso_ate: teste ? ate : null, origem: teste ? 'teste' : null,
+        teste_disponivel: !ate, codigo_indicacao: 'LOCAL1', indicacao_usada: false, indicadas: 0 };
+    }
     async setDemoPlan(uid, p) { LS.set('ninho.local.plan.' + uid, p); }
+    async startTrial(uid) {
+      if (LS.get('ninho.local.trial.' + uid)) return { ok: false, motivo: 'usado' };
+      const ate = new Date(Date.now() + (CFG.TESTE_DIAS || 7) * 864e5).toISOString(); LS.set('ninho.local.trial.' + uid, ate); return { ok: true, ate };
+    }
+    async useReferral() { return { ok: false, motivo: 'online' }; }
+    async redeemGift() { return { ok: false, motivo: 'online' }; }
+    async familyList() { return null; }
+    async familyMessages() { return []; }
+    async appConfig() { return null; }
     async recordConsents() { }
     async deleteAccount(uid, email) { const a = this._acc(); delete a[email]; this._saveAcc(a); LS.del('ninho.local.plan.' + uid); LS.del('ninho.local.session'); return { ok: true }; }
     onAuth() { }
@@ -177,7 +191,17 @@
     async download(path) { const { data, error } = await this.sb.storage.from('ninho').download(path); if (error) throw error; return data; }
     async removeFile(path) { await this.sb.storage.from('ninho').remove([path]); }
     async deleteAccount() { const { data, error } = await this.sb.functions.invoke('delete-account', { body: { confirmacao: 'EXCLUIR' } }); if (error) throw error; return data; }
-    async checkout(ciclo) { const { data, error } = await this.sb.functions.invoke('create-checkout', { body: { ciclo } }); if (error) throw error; return data.url; }
+    async checkout(ciclo) { const { data, error } = await this.sb.functions.invoke('create-checkout', { body: { ciclo, retorno: location.origin + location.pathname } }); if (error) throw error; return data.url; }
+    async rpc(fn, args) { const { data, error } = await this.sb.rpc(fn, args); if (error) throw error; return data; }
+    async startTrial() { return this.rpc('iniciar_teste'); }
+    async useReferral(_uid, codigo) { return this.rpc('usar_indicacao', { p_codigo: codigo }); }
+    async redeemGift(_uid, codigo) { return this.rpc('resgatar_presente', { p_codigo: codigo }); }
+    async familyList() { const { data, error } = await this.sb.from('familia_convites').select('id,token,nome,papel,ver_fotos,revogado_em,ultimo_acesso,created_at').is('revogado_em', null).order('created_at'); if (error) throw error; return data; }
+    async familyCreate(nome, ver_fotos, papel = 'familia') { const { data, error } = await this.sb.from('familia_convites').insert({ nome, ver_fotos, papel }).select('id,token,nome,papel,ver_fotos,created_at').single(); if (error) throw error; return data; }
+    async familyMessages() { const { data, error } = await this.sb.from('familia_recados').select('id,autor,texto,lido_em,created_at').is('deleted_at', null).order('created_at', { ascending: false }).limit(100); if (error) throw error; return data; }
+    async familyMessageUpdate(id, patch) { const { error } = await this.sb.from('familia_recados').update(patch).eq('id', id); if (error) throw error; }
+    async appConfig() { const { data, error } = await this.sb.from('app_config').select('dados').eq('id', 1).maybeSingle(); if (error) throw error; return data && data.dados; }
+    async familyUpdate(id, patch) { const { error } = await this.sb.from('familia_convites').update(patch).eq('id', id); if (error) throw error; }
     async savePush(sub) {
       const j = sub.toJSON();
       const { error } = await this.sb.from('push_subscriptions').upsert({ endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, user_agent: navigator.userAgent.slice(0, 200) }, { onConflict: 'endpoint' });
@@ -236,13 +260,39 @@
       this.persistNow();
       if (this.backend.remote) await this.sync().catch(() => { });
     },
+    /** Preços, prazos, aviso e recursos editados no painel de administração. */
+    applyConfig(d) {
+      if (!d || typeof d !== 'object') return;
+      const brl = v => 'R$ ' + Number(v).toFixed(2).replace('.', ',');
+      if (d.precos) CFG.PRECOS = Object.assign({}, CFG.PRECOS, Object.fromEntries(Object.entries(d.precos).filter(([, v]) => +v > 0).map(([k, v]) => [k, brl(v)])));
+      if (d.reta_final_desde) CFG.RETA_FINAL_DESDE = +d.reta_final_desde;
+      if (d.teste_dias != null) CFG.TESTE_DIAS = +d.teste_dias;
+      if (d.indicacao_dias != null) CFG.INDICACAO_DIAS = +d.indicacao_dias;
+      CFG.AVISO = d.aviso || null;
+      CFG.RECURSOS = Object.assign({}, CFG._RECURSOS_BASE || (CFG._RECURSOS_BASE = Object.assign({}, CFG.RECURSOS)), d.recursos || {});
+    },
+    async refreshConfig() {
+      try { const d = await this.backend.appConfig(); if (d) { this.applyConfig(d); if (this.S) this.S.meta.config = d; } }
+      catch (e) { if (this.S && this.S.meta.config) this.applyConfig(this.S.meta.config); }   // offline: última configuração conhecida
+    },
     async refreshPlan() {
+      if (!this._cfgAt || Date.now() - this._cfgAt > 10 * 60e3) { this._cfgAt = Date.now(); await this.refreshConfig(); }
       try { const p = await this.backend.plan(this.S.uid); const was = this.S.meta.plan; this.S.meta.plan = p.plano === 'plus' ? 'plus' : 'free'; this.S.meta.planInfo = p;
         if (was !== this.S.meta.plan) { if (this.S.meta.plan === 'plus') this.unblockAll(); this.emit('plan', this.S.meta.plan); }
       } catch (e) { /* offline: mantém último plano conhecido */ }
     },
     isPlus() { return !!(this.S && this.S.meta.plan === 'plus'); },
     can(feature) { const r = (CFG.RECURSOS || {})[feature]; return r !== 'plus' || this.isPlus(); },
+    get planInfo() { return (this.S && this.S.meta.planInfo) || {}; },
+    trialAvailable() { return !this.isPlus() && this.planInfo.teste_disponivel === true; },   // só oferece se o servidor confirmar
+    async startTrial() { const r = await this.backend.startTrial(this.S.uid); await this.refreshPlan(); this.persistNow(); return r; },
+    async redeemCode(codigo) {      // presente (10 caracteres) ou indicação (6)
+      const c = String(codigo || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      const r = c.length === 10 ? await this.backend.redeemGift(this.S.uid, c) : c.length === 6 ? await this.backend.useReferral(this.S.uid, c) : { ok: false, motivo: 'invalido' };
+      r.tipo = c.length === 10 ? 'presente' : 'indicacao';
+      if (r.ok) { await this.refreshPlan(); this.persistNow(); }
+      return r;
+    },
 
     /* ---------- persistência local ---------- */
     persist() { clearTimeout(this._pt); this._pt = setTimeout(() => this.persistNow(), 250); },
@@ -257,7 +307,7 @@
     /* ---------- escrita ---------- */
     upsert(t, rec) {
       if (!TABLES[t]) throw new Error('tabela desconhecida ' + t);
-      if (TABLES[t].plus && !this.isPlus() && !rec.deleted_at) throw Object.assign(new Error('Recurso do Ninho+'), { code: 'PLUS' });
+      if (TABLES[t].plus && !this.can(TABLES[t].rec) && !rec.deleted_at) throw Object.assign(new Error('Recurso do Ninho+'), { code: 'PLUS' });
       if (!this.S.gestacao) throw new Error('Cadastre a gestação primeiro');
       const arr = this.S.t[t]; const now = nowISO();
       const i = rec.id ? arr.findIndex(r => r.id === rec.id) : -1;
@@ -275,6 +325,12 @@
     patchProfile(patch) { Object.assign(this.S.profile, patch, { _dirty: true }); this.changed(); },
     patchPrefs(patch) { this.S.profile.preferencias = Object.assign({}, this.prefs, patch); this.S.profile._dirty = true; this.changed(); },
     patchGame(patch) { this.S.profile.gamificacao = Object.assign({}, this.game, patch); this.S.profile._dirty = true; this.changed(); },
+    /** Encerra a gestação atual (fica guardada, inativa) para começar uma nova. */
+    novaGestacao() {
+      const old = this.S.gestacao; if (!old) return;
+      this.S.gestAntigas = (this.S.gestAntigas || []).concat(Object.assign({}, old, { ativa: false, updated_at: nowISO() }));
+      this.S.gestacao = null; this.changed();
+    },
     setGestacao(data) {
       const now = nowISO(); const cur = this.S.gestacao;
       this.S.gestacao = Object.assign(cur || { id: uuid(), user_id: this.S.uid, created_at: now, ativa: true, antecedentes: {}, plano_parto: {} }, data, { updated_at: now, _dirty: true });
@@ -322,6 +378,7 @@
           // 2) perfil
           if (S.profile._dirty) { const pp = clean(S.profile, PROFILE_COLS); if (!pp.nome_completo) delete pp.nome_completo; await b.pushProfile(S.uid, pp); delete S.profile._dirty; }
           // 3) gestação antes das filhas
+          if ((S.gestAntigas || []).length) { await b.push('gestacoes', S.gestAntigas.map(x => clean(x, GEST_COLS))); S.gestAntigas = []; }   // encerradas antes da nova (só uma ativa)
           if (S.gestacao && S.gestacao._dirty) { await b.push('gestacoes', [clean(S.gestacao, GEST_COLS)]); delete S.gestacao._dirty; }
           // 4) arquivos pendentes e registros
           for (const t of ORDER) {
@@ -363,7 +420,7 @@
       })();
       try { return await this._syncing; } finally { this._syncing = null; }
     },
-    pendingCount() { if (!this.S) return 0; let n = this.S.profile._dirty ? 1 : 0; if (this.S.gestacao && this.S.gestacao._dirty) n++; for (const t of ORDER) n += this.S.t[t].filter(r => r._dirty && !r._blocked).length; return n; },
+    pendingCount() { if (!this.S) return 0; let n = this.S.profile._dirty ? 1 : 0; n += (this.S.gestAntigas || []).length; if (this.S.gestacao && this.S.gestacao._dirty) n++; for (const t of ORDER) n += this.S.t[t].filter(r => r._dirty && !r._blocked).length; return n; },
     blockedCount() { if (!this.S) return 0; let n = 0; for (const t of ORDER) n += this.S.t[t].filter(r => r._blocked).length; return n; },
 
     /* ---------- conta ---------- */
@@ -399,7 +456,7 @@
       let n = 0, pulados = 0;
       const idmap = {};
       for (const t of ORDER) for (const r of (data.registros && data.registros[t]) || []) {
-        if (TABLES[t].plus && !this.isPlus()) { pulados++; continue; }
+        if (TABLES[t].plus && !this.can(TABLES[t].rec)) { pulados++; continue; }
         const nid = uuid(); idmap[r.id] = nid;
         const rec = Object.assign({}, r, { id: nid, user_id: this.S.uid, gestacao_id: this.S.gestacao.id, arquivo_path: null });
         if (rec.medicamento_id) rec.medicamento_id = idmap[rec.medicamento_id] || rec.medicamento_id;

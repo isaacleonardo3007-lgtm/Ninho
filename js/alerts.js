@@ -35,7 +35,7 @@
       const cl = C.classifyBP(pa.s, pa.d);
       if (cl === 'grave' || (cl === 'alta' && temSintomaPE)) a.push({
         id: 'pa-urgente', sev: 'urgente', ic: '🩺', titulo: cl === 'grave' ? 'Pressão muito alta' : 'Pressão alta com sintomas',
-        msg: `Sua última medida foi ${pa.s}/${pa.d} mmHg${cl === 'alta' ? ' e você registrou sintomas como dor de cabeça, visão alterada ou inchaço' : ''}. Isso pode ser pré-eclâmpsia: procure a maternidade agora.`,
+        msg: `Sua última medida foi ${pa.s}/${pa.d} mmHg${cl === 'alta' ? ' e você registrou sintomas como dor de cabeça, visão alterada ou inchaço' : ''}. A Caderneta orienta procurar a maternidade agora.`,
         acts: [['Ligar 192', 'call192', 'pri'], ['Sinais de alerta', 'go:help']], fonte: 'Caderneta da Gestante 2026 — ≥ 160/110 é situação de urgência' });
       else if (cl === 'alta') a.push({
         id: 'pa-alta', sev: 'atencao', ic: '🩺', titulo: 'Pressão acima de 140/90',
@@ -67,7 +67,7 @@
     if (ult && ult.bcf_bpm && (ult.bcf_bpm < C.BCF[0] || ult.bcf_bpm > C.BCF[1])) a.push({
       id: 'bcf', sev: 'atencao', ic: '💓', titulo: 'Batimentos do bebê fora da faixa',
       msg: `BCF registrado de ${ult.bcf_bpm} bpm (esperado entre ${C.BCF[0]} e ${C.BCF[1]}). Confira se o valor foi digitado certo; se sim, confirme com sua equipe.`, acts: [['Ver consulta', 'go:record:consultas']] });
-    if (ult && ult.altura_uterina_cm) {
+    if (ult && ult.altura_uterina_cm && (gest.tipo_gravidez || 'unica') === 'unica') {   // curva válida só para gestação de um bebê
       const ig = igAt(ult.data), r = C.classifyAU(ig.w, +ult.altura_uterina_cm);
       if (r && r.sev !== 'ok') a.push({ id: 'au', sev: 'atencao', ic: '📏', titulo: `Altura uterina ${r.pos} da curva`, msg: r.msg, acts: [['Ver curva', 'go:record:curvas']], fonte: 'Curva de altura uterina (P10–P90)' });
     }
@@ -101,7 +101,7 @@
       if (temp && +temp.valor >= C.FEBRE) a.push({ id: 'febre', sev: 'urgente', ic: '🌡️', titulo: 'Febre', msg: `Temperatura de ${temp.valor} °C (acima de 37,8 °C) é sinal de perigo na gestação. Procure atendimento.`, acts: [['Ligar 192', 'call192', 'pri']], fonte: 'Caderneta da Gestante 2026' });
       // sintomas fortes isolados
       sintomasRecentes.filter(s => s.intensidade >= 3 && SINT_PE.includes(s.nome)).slice(0, 1).forEach(s => {
-        if (!a.some(x => x.id === 'pa-urgente')) a.push({ id: 'sint-' + s.nome, sev: 'atencao', ic: s.emoji || '📝', titulo: `${s.nome} forte`, msg: `${s.nome} forte pode estar ligada à pressão. Meça a pressão se puder; se vier com alteração da visão, dor no estômago ou inchaço repentino, procure a maternidade.`, acts: [['Sinais de alerta', 'go:help']] });
+        if (!a.some(x => x.id === 'pa-urgente')) a.push({ id: 'sint-' + s.nome, sev: 'atencao', ic: s.emoji || '📝', titulo: `${s.nome} forte`, msg: `Você registrou ${s.nome.toLowerCase()} forte. Orientação: meça a pressão se puder; se vier com alteração da visão, dor no estômago ou inchaço repentino, procure a maternidade.`, acts: [['Sinais de alerta', 'go:help']] });
       });
       // exames: resultado mais recente de cada código
       const ex = {}; list('exames').forEach(e => { if (!ex[e.codigo] || e.data > ex[e.codigo].data) ex[e.codigo] = e; });
@@ -114,7 +114,7 @@
     }
 
     /* ---------- Rh negativo ---------- */
-    if (/-$/.test(profile.tipo_sanguineo || '') && w >= 24 && w <= 30) a.push({ id: 'rh', sev: 'info', ic: '🅾️', titulo: 'Rh negativo', msg: 'Com Rh negativo, você precisa do Coombs indireto no pré-natal e pode precisar de imunoglobulina anti-D por volta de 28 semanas e após o parto. Confirme com sua equipe.', acts: [], dispensavel: true });
+    if (/-$/.test(profile.tipo_sanguineo || '') && w >= 24 && w <= 30) a.push({ id: 'rh', sev: 'info', ic: '🅾️', titulo: 'Rh negativo', msg: 'Com Rh negativo, a Caderneta prevê o Coombs indireto no pré-natal e cuidados específicos por volta de 28 semanas e após o parto. Orientação: confirme com sua equipe.', acts: [], dispensavel: true });
 
     /* ---------- Agenda de consultas (mínimo 7; início até 12 semanas) ---------- */
     if (!consultas.length && w >= 6) a.push({ id: 'pn-inicio', sev: w > C.CONSULTAS.inicioAte ? 'atencao' : 'info', ic: '🩺', titulo: w > C.CONSULTAS.inicioAte ? 'Registre seu pré-natal' : 'Comece o pré-natal',

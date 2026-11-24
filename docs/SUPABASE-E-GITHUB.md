@@ -79,16 +79,26 @@ No iPhone, o push só funciona com o Ninho **adicionado à Tela de Início** (iO
 
 ## 6. Pagamento do Ninho+ (Mercado Pago)
 1. Crie uma aplicação em <https://www.mercadopago.com.br/developers> e pegue o *Access Token* (comece pelo de **teste**).
-2. Em *Webhooks*, cadastre `https://xxxx.supabase.co/functions/v1/payment-webhook`, evento **Planos e assinaturas**, e copie a *assinatura secreta*.
+2. Em *Webhooks*, cadastre `https://xxxx.supabase.co/functions/v1/payment-webhook` com os eventos **Pagamentos** (Passe Gestação e presentes) e **Planos e assinaturas** (mensal), e copie a *assinatura secreta*.
 3. Secrets e deploy:
 ```bash
-supabase secrets set MP_ACCESS_TOKEN=... MP_WEBHOOK_SECRET=... PRECO_MENSAL=14.90 PRECO_ANUAL=119.00
+supabase secrets set MP_ACCESS_TOKEN=... MP_WEBHOOK_SECRET=... PRECO_PASSE=89.90 PRECO_MENSAL=14.90 PRECO_ANUAL=119.00 \
+  APP_ORIGIN=https://SEU-USUARIO.github.io
 supabase functions deploy create-checkout
 supabase functions deploy payment-webhook --no-verify-jwt
+supabase functions deploy presente --no-verify-jwt     # Ninho+ de presente (quem compra não precisa de conta)
+supabase functions deploy familia --no-verify-jwt      # página da família (protegida pelo token do convite)
 ```
-O webhook é o **único** caminho que libera o Plus: valida a assinatura do Mercado Pago, consulta o status real na API e atualiza `assinaturas`. Para liberar alguém manualmente (cortesia, testes):
+Os preços **mostrados** no app ficam em `js/config.js → PRECOS`; os **cobrados**, nos secrets `PRECO_*`. Mantenha os dois iguais.
+
+**Como o Ninho+ é liberado**
+- Assinatura mensal: tabela `assinaturas`, atualizada pelo webhook.
+- Passe Gestação, presente, teste grátis de 7 dias e bônus de indicação: tabela `concessoes` (com prazo, empilhando uma depois da outra). O Passe e o presente valem até **DPP + 90 dias** (mínimo 60 dias). Estorno ou chargeback encerra o que aquele pagamento liberou.
+- Nenhum desses caminhos pode ser acionado pela própria usuária: só o webhook (Passe/presente) e as funções do banco (teste uma vez por conta; indicação uma vez, nos primeiros 30 dias de conta, com limite de 12 bônus para quem indica).
+
+Para liberar alguém manualmente (cortesia, testes), no SQL Editor:
 ```sql
-update assinaturas set plano='plus', status='active', provedor='manual', periodo_fim=now()+interval '30 days' where user_id='...';
+insert into concessoes (user_id, origem, ref, fim) values ('<id da usuária>', 'manual', 'cortesia-1', now() + interval '30 days');
 ```
 > Se o app for publicado nas lojas (Android/iOS), as lojas exigem a cobrança delas para assinaturas digitais; aí o webhook passa a ser o da loja (ou RevenueCat).
 
