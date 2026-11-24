@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#452f45">
+<meta name="description" content="Dê o Ninho+ de presente para uma gestante: acompanhamento da gestação baseado na Caderneta da Gestante.">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src https://*.supabase.co; base-uri 'self'; form-action 'self'">
+<title>Ninho+ de presente</title>
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Hanken+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<style>
+  body{background:var(--bg)} .wrap{max-width:520px;margin:0 auto;padding:22px 18px 40px}
+  .hero{background:var(--grad);color:#fff;border-radius:26px;padding:26px 22px;text-align:center}
+  .hero h1{font-family:var(--serif);font-weight:500;font-size:30px;margin:6px 0}
+  .hero p{opacity:.92;margin:0;line-height:1.5}
+  .lst{list-style:none;padding:0;margin:0}.lst li{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .big{font-family:var(--serif);font-size:30px;color:var(--violet)}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="hero"><div style="font-size:48px">🎁</div><h1>Ninho+ de presente</h1>
+    <p>Para a gestante que você ama: o acompanhamento completo da gestação, com base na Caderneta da Gestante do Ministério da Saúde.</p></div>
+
+  <section id="form-s">
+    <div class="card" style="margin-top:16px">
+      <div class="big">R$ 89,90 <span class="muted" style="font-size:14px;font-family:inherit">pagamento único</span></div>
+      <p class="muted" style="font-size:13px;margin:2px 0 10px">Pix ou cartão. Vale até 3 meses depois do parto. Sem assinatura, sem renovação.</p>
+      <ul class="lst">
+        <li>📸 Diário da barriga com vídeo da evolução</li><li>👜 Kit do parto: contrações e mala da maternidade</li>
+        <li>🔬 Exames da Caderneta com alertas</li><li>👨‍👩‍👧 A família acompanhando as fotos</li><li>📝 Plano de parto e resumo em PDF</li>
+      </ul>
+    </div>
+    <div class="card">
+      <label class="lbl" for="p-nome">Seu nome (aparece para ela)</label><input class="in" id="p-nome" maxlength="80" autocomplete="name">
+      <label class="lbl" for="p-email">Seu e-mail (para o recibo)</label><input class="in" id="p-email" type="email" maxlength="200" autocomplete="email">
+      <label class="lbl" for="p-para">Nome dela (opcional)</label><input class="in" id="p-para" maxlength="80">
+      <label class="lbl" for="p-msg">Mensagem (opcional)</label><textarea class="in" id="p-msg" rows="3" maxlength="300" placeholder="Com todo amor, da vovó 💜"></textarea>
+      <button class="btn full" id="p-b" style="margin-top:12px">Ir para o pagamento</button>
+      <p class="muted" id="p-err" role="alert" style="font-size:13px;color:var(--bad);margin:8px 0 0"></p>
+    </div>
+    <p class="muted" style="font-size:12px;text-align:center">Depois do pagamento você recebe um código para enviar a ela. Ela digita o código no app (Eu → Tenho um código).</p>
+  </section>
+
+  <section id="ret-s" class="hidden">
+    <div class="card" style="margin-top:16px;text-align:center" id="ret-c"></div>
+  </section>
+  <p style="text-align:center;margin-top:18px"><a href="./" style="color:var(--violet)">Conhecer o Ninho</a></p>
+</main>
+<script src="js/config.js"></script>
+<script>
+'use strict';
+const CFG = window.NINHO_CONFIG, FN = CFG.SUPABASE_URL + '/functions/v1/presente';
+const H = { apikey: CFG.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + CFG.SUPABASE_ANON_KEY };
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const base = location.origin + location.pathname.replace(/[^/]*$/, '');
+if (CFG.PRECOS && CFG.PRECOS.passe) document.querySelector('.big').firstChild.textContent = CFG.PRECOS.passe + ' ';
+
+$('p-b').onclick = async () => {
+  const nome = $('p-nome').value.trim(), email = $('p-email').value.trim();
+  if (!nome) return ($('p-err').textContent = 'Escreva seu nome.', $('p-nome').focus());
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return ($('p-err').textContent = 'Informe um e-mail válido.', $('p-email').focus());
+  $('p-b').disabled = true; $('p-b').textContent = 'Abrindo o pagamento…'; $('p-err').textContent = '';
+  try {
+    const r = await fetch(FN, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, H),
+      body: JSON.stringify({ comprador_nome: nome, comprador_email: email, para_nome: $('p-para').value.trim(), mensagem: $('p-msg').value.trim(), retorno: base + 'presente.html' }) });
+    const d = await r.json();
+    if (!r.ok || !/^https:\/\//.test(d.url || '')) throw new Error(d.error || 'erro');
+    try { sessionStorage.setItem('ninho.presente', d.t); } catch (e) { }
+    location.href = d.url;
+  } catch (e) {
+    $('p-err').textContent = e.message === 'limite' ? 'Muitas tentativas. Aguarde um pouco e tente de novo.' : 'Não foi possível abrir o pagamento agora. Tente de novo em instantes.';
+    $('p-b').disabled = false; $('p-b').textContent = 'Ir para o pagamento';
+  }
+};
+
+async function consultar(t, tentativa) {
+  const box = $('ret-c');
+  try {
+    const r = await fetch(FN + '?t=' + encodeURIComponent(t), { headers: H }); const d = await r.json();
+    if (d.codigo) {
+      const texto = `${d.para_nome ? d.para_nome + ', ' : ''}tenho um presente para você 🎁 O Ninho+ para acompanhar sua gestação! Abra ${base} , crie sua conta e, em Eu → Tenho um código, digite: ${d.codigo}`;
+      box.innerHTML = `<div style="font-size:48px">💝</div><h2 style="margin:4px 0">Presente pronto!</h2><p class="muted">Envie este código para ${esc(d.para_nome || 'ela')}:</p>
+        <div class="codigo-box">${esc(d.codigo)}</div>
+        <a class="btn full" style="margin-top:12px;text-decoration:none;display:block" href="https://wa.me/?text=${encodeURIComponent(texto)}" target="_blank" rel="noopener">Enviar pelo WhatsApp</a>
+        <button class="btn sec full" style="margin-top:8px" id="cp">Copiar mensagem</button>
+        <p class="muted" style="font-size:12px;margin-top:10px">Guarde esta página. O código vale uma vez.</p>`;
+      $('cp').onclick = () => navigator.clipboard.writeText(texto).then(() => { $('cp').textContent = 'Copiado ✓'; });
+      return;
+    }
+    if (/falhou=1/.test(location.search)) { box.innerHTML = '<p>O pagamento não foi concluído.</p><a class="btn full" href="presente.html" style="text-decoration:none;display:block">Tentar de novo</a>'; return; }
+    box.innerHTML = `<div style="font-size:40px">⏳</div><p><b>Aguardando a confirmação do pagamento…</b></p><p class="muted" style="font-size:13px">Pix costuma confirmar em instantes. Esta página atualiza sozinha.</p>`;
+    if (tentativa < 40) setTimeout(() => consultar(t, tentativa + 1), 5000);
+  } catch (e) { box.innerHTML = '<p>Não foi possível consultar agora.</p><button class="btn full" onclick="location.reload()">Tentar de novo</button>'; }
+}
+const t = new URLSearchParams(location.search).get('t');
+if (t) { $('form-s').classList.add('hidden'); $('ret-s').classList.remove('hidden'); consultar(t, 0); }
+</script>
+</body>
+</html>

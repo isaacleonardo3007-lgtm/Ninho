@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net data:; img-src 'self' data:; connect-src https://*.supabase.co wss://*.supabase.co; base-uri 'self'; form-action 'self'">
+<title>Ninho — administração</title>
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/admin.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+</head>
+<body class="adm">
+<header class="adm-top"><div class="adm-marca"><i class="ph ph-shield-check"></i> Ninho · administração</div><div id="adm-user"></div></header>
+<nav class="adm-nav hidden" id="adm-nav" aria-label="Seções">
+  <button data-t="geral" class="on"><i class="ph ph-chart-bar"></i> Visão geral</button>
+  <button data-t="contas"><i class="ph ph-users"></i> Contas</button>
+  <button data-t="nova"><i class="ph ph-user-plus"></i> Nova conta</button>
+  <button data-t="config"><i class="ph ph-sliders"></i> Configurações</button>
+  <button data-t="historico"><i class="ph ph-clock-counter-clockwise"></i> Histórico</button>
+</nav>
+<main class="adm-main" id="adm-main"><div class="card" style="text-align:center"><p class="muted">Carregando…</p></div></main>
+<div id="modal-root"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="js/config.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

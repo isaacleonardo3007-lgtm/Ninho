@@ -17,6 +17,9 @@ PWA mobile-first baseada na **Caderneta Brasileira da Gestante (Ministério da S
 | Vacinas (inclui VSR) | Diário de memórias, plano de parto |
 | Contador de movimentos, alertas, sinais de perigo, cartão de emergência | Resumo completo em PDF |
 | Lembretes de consulta, vacina, exame e movimentos | Lembretes de medicação e medições |
+| Card da semana para compartilhar, convite da família, “quando ir para a maternidade” e “estou indo” | Diário da barriga com vídeo, contador de contrações, mala da maternidade, família vendo as fotos |
+
+**Como se assina:** Passe Gestação (pagamento único, Pix ou cartão, até 3 meses após o parto), mensal, teste grátis de 7 dias (uma vez por conta), presente (`presente.html`, quem compra não precisa de conta) e indicação (as duas ganham 30 dias).
 
 A divisão fica em `js/config.js → RECURSOS` e é **imposta também no banco** (RLS), não só na tela.
 
@@ -41,7 +44,7 @@ docs/                    guia Supabase/GitHub, relatório de testes, referência
 ## Começar
 1. Rodar localmente (modo local, sem servidor): `python3 -m http.server 8766` e abra <http://localhost:8766>.
 2. Ligar ao Supabase e publicar: **[docs/SUPABASE-E-GITHUB.md](docs/SUPABASE-E-GITHUB.md)**.
-3. Testes: `npm install && npx playwright install chromium && npm test` (159 verificações no total, ver **[docs/RELATORIO-DE-TESTES.md](docs/RELATORIO-DE-TESTES.md)**).
+3. Testes: `npm install && npx playwright install chromium && npm test` (211 verificações no total, ver **[docs/RELATORIO-DE-TESTES.md](docs/RELATORIO-DE-TESTES.md)**).
 
 Também: **[docs/REFERENCIAS-CLINICAS.md](docs/REFERENCIAS-CLINICAS.md)** · **[docs/PRIVACIDADE-LGPD.md](docs/PRIVACIDADE-LGPD.md)**
 

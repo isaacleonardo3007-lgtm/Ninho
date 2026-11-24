@@ -1,0 +1,8 @@
+.DS_Store
+node_modules/
+tests/e2e/screens/
+tests/e2e/result*.json
+supabase/.temp/
+supabase/.branches/
+.env
+.env.*

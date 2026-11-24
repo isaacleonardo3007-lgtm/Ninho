@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#452f45">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://*.supabase.co; connect-src https://*.supabase.co; base-uri 'self'; form-action 'self'">
+<title>Ninho — família</title>
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Hanken+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<style>
+  body{background:var(--bg)} .wrap{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+  .hero{background:var(--grad);color:#fff;border-radius:26px;padding:24px 20px;text-align:center}
+  .hero .fr{font-size:70px;line-height:1} .hero h1{font-family:var(--serif);font-weight:500;font-size:34px;margin:6px 0 2px}
+  .hero p{opacity:.92;margin:4px 0 0;line-height:1.45}
+  .bar{height:8px;border-radius:9px;background:rgba(255,255,255,.25);margin:14px 0 6px;overflow:hidden}.bar i{display:block;height:100%;background:#fff;border-radius:9px}
+  .fotos{display:grid;grid-template-columns:1fr 1fr;gap:10px}.fotos figure{margin:0;border-radius:16px;overflow:hidden;background:var(--card);border:1px solid var(--line)}
+  .fotos img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}.fotos figcaption{font-size:12.5px;padding:7px 9px;color:var(--muted)}
+  .hero .ilu-grupo,.hero .ilu{margin:0 auto} .hero.calma{background:linear-gradient(150deg,#5b5566 0%,#7b7486 60%,#9a93a3 100%)}
+  .dicas{margin:6px 0 0;padding-left:18px;line-height:1.6;font-size:14px}
+</style>
+</head>
+<body>
+<main class="wrap" id="root"><div class="card" style="text-align:center;margin-top:30px"><div style="font-size:40px">🪺</div><p class="muted">Carregando…</p></div></main>
+<script src="js/config.js"></script>
+<script src="js/clinical.js"></script>
+<script src="js/ilustra.js"></script>
+<script>
+'use strict';
+const CFG = window.NINHO_CONFIG, C = window.Clin;
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+const fmt = d => d ? String(d).slice(0, 10).split('-').reverse().join('/') : '';
+const root = document.getElementById('root');
+const token = location.hash.slice(1);
+const API = CFG.SUPABASE_URL + '/functions/v1/familia', HDR = { apikey: CFG.SUPABASE_ANON_KEY, Authorization: 'Bearer ' + CFG.SUPABASE_ANON_KEY };
+
+/* Dicas de apoio por papel (Caderneta 2026, 4.7 "Pré-natal da parceria" e Parte VI) */
+const DICAS = {
+  parceria: ['Acompanhe as consultas, grupos e atividades do pré-natal quando puder.', 'Faça também o seu pré-natal da parceria: a Caderneta lembra que doenças da parceria podem afetar a gestante e o bebê.', 'Divida as tarefas de casa e de cuidado, principalmente na reta final.', 'Aprenda sobre parto, amamentação e cuidados com o bebê.'],
+  avos: ['Ofereça ajuda prática, como refeições, casa e outros netos.', 'Pergunte do que ela precisa antes de aconselhar.', 'Combine a ajuda para os primeiros dias depois do parto.'],
+  amigos: ['Mande mensagens sem esperar resposta rápida.', 'Ofereça algo concreto: uma refeição, uma carona, uma tarde de companhia.', 'Respeite o espaço e o tempo dela.'],
+  familia: ['Ofereça ajuda prática no dia a dia.', 'Respeite as escolhas dela e da equipe de saúde.', 'Combine a ajuda para os primeiros dias depois do parto.'],
+};
+DICAS.tios = DICAS.irmaos = DICAS.familia;
+const POS_PARTO = ['Faça visitas curtas e combine antes.', 'Leve comida pronta ou ajude com a casa para ela descansar.', 'Lave as mãos antes de pegar o bebê.', 'Fique atento: tristeza intensa ou dificuldade para cuidar de si ou do bebê pedem ajuda da equipe de saúde.'];
+
+function erro(msg) {
+  root.innerHTML = `<div class="card" style="text-align:center;margin-top:30px"><div style="font-size:40px">💜</div><p>${msg}</p><a class="btn full" href="./" style="text-decoration:none;display:block">Conhecer o Ninho</a></div>`;
+}
+function formRecado(d, quem) {
+  return `<div class="card" style="margin-top:14px" id="rc"><b>💌 Deixe um recado para ${quem}</b>
+    <label class="lbl" for="rc-a">Seu nome</label><input class="in" id="rc-a" maxlength="60" value="${esc(d.para)}">
+    <label class="lbl" for="rc-t">Recado</label><textarea class="in" id="rc-t" rows="3" maxlength="500" placeholder="Escreva com carinho"></textarea>
+    <button class="btn full" id="rc-b" style="margin-top:10px" onclick="enviarRecado()">Enviar recado</button></div>`;
+}
+async function enviarRecado() {
+  const autor = document.getElementById('rc-a').value.trim(), texto = document.getElementById('rc-t').value.trim(), b = document.getElementById('rc-b');
+  if (!texto) return document.getElementById('rc-t').focus();
+  b.disabled = true; b.textContent = 'Enviando…';
+  try {
+    const r = await fetch(API, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, HDR), body: JSON.stringify({ t: token, autor, texto }) });
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || 'erro');
+    document.getElementById('rc').innerHTML = '<p style="text-align:center;margin:6px 0">💜 Recado entregue. Obrigada pelo carinho.</p>';
+  } catch (e) { b.disabled = false; b.textContent = 'Enviar recado'; alert(e.message === 'limite' ? 'Você já mandou muitos recados hoje. Tente amanhã.' : 'Não foi possível enviar agora.'); }
+}
+async function carregar() {
+  if (!/^[0-9a-f]{64}$/.test(token)) return erro('Este link de convite não é válido.');
+  let d;
+  try {
+    const r = await fetch(API + '?t=' + token, { headers: HDR });
+    d = await r.json();
+    if (!r.ok) return erro(d.error === 'sem_gestacao' ? 'Ainda não há uma gestação para acompanhar por aqui.' : 'Este convite não está mais ativo. Peça um novo link a quem convidou você.');
+  } catch (e) { return erro('Não foi possível carregar agora. Verifique a internet e tente de novo.'); }
+  const quem = esc(cap(d.mae) || 'ela');
+  if (d.pausado) {   // depois de uma perda: nada de semanas, bebê ou fotos
+    document.title = 'Ninho';
+    root.innerHTML = `<div class="hero calma">${Ilustra.cuidado({ w: 90 })}<h1 style="font-size:26px">Oi, ${esc(d.para)}</h1><p>${quem} pausou o compartilhamento por enquanto.</p></div>
+      <div class="card" style="margin-top:14px"><b>Como estar por perto</b><ul class="dicas"><li>Ofereça presença e ajuda prática, sem cobrar respostas.</li><li>Evite frases que tentem explicar ou diminuir a perda.</li><li>Respeite o tempo dela.</li></ul></div>
+      ${formRecado(d, quem)}`;
+    return;
+  }
+  const tons = (d.tons && d.tons.bebe) || [], nb = d.bebes || 1, ilu = Ilustra.bebes(Array.from({ length: nb }, (_, i) => tons[i] != null ? tons[i] : (tons[0] != null ? tons[0] : Ilustra.PADRAO)), { w: 96 });
+  const bebe = d.bebe ? esc(cap(d.bebe)) : (nb > 1 ? 'os bebês' : 'o bebê');
+  if (d.nasceu) {
+    document.title = `${d.bebe ? cap(d.bebe) : 'Ninho'} chegou`;
+    root.innerHTML = `<p class="muted" style="text-align:center;margin:0 0 10px">Oi, ${esc(d.para)} 💜</p>
+      <div class="hero">${ilu}<h1>${bebe} ${nb > 1 ? 'chegaram' : 'chegou'}!</h1><p>Nascimento em ${fmt(d.nasceu)}</p></div>
+      <div class="card" style="margin-top:14px"><b>Como ajudar no pós-parto</b><ul class="dicas">${POS_PARTO.map(x => `<li>${x}</li>`).join('')}</ul></div>
+      ${formRecado(d, quem)}`;
+    return;
+  }
+  const g = C.gaFrom({ metodo_ig: 'dum', dum: d.inicio });
+  const [, nm] = C.frutaDa(g.w), tri = C.trimester(g.w), t = C.TRIMESTRES[tri - 1];
+  const faltam = Math.max(0, C.diffDays(d.dpp, C.toISODate(C.today()))), pct = Math.max(0, Math.min(100, Math.round(g.days / 280 * 100)));
+  document.title = `${d.mae ? cap(d.mae) : 'Ninho'} · ${g.w} semanas`;
+  root.innerHTML = `<p class="muted" style="text-align:center;margin:0 0 10px">Oi, ${esc(d.para)} 💜 Você está acompanhando a gestação de ${quem}.</p>
+    <div class="hero">${ilu}<h1>${g.w} semanas e ${g.d} ${g.d === 1 ? 'dia' : 'dias'}</h1>
+      <p>${nb > 1 ? bebe + ' crescem juntinhos' : bebe + ' tem o tamanho de ' + C.artigo(nm) + ' ' + esc(nm)} · ${tri}º trimestre</p>
+      <div class="bar"><i style="width:${pct}%"></i></div><p style="font-size:13.5px">${faltam ? `Faltam ${faltam} dias · previsão ${fmt(d.dpp)}` : 'Chegou a hora! 💜'}</p></div>
+    <div class="card" style="margin-top:14px"><b>Nesta fase</b><p class="muted" style="margin:6px 0 0;line-height:1.55">${t.baby}</p></div>
+    ${d.fotos && d.fotos.length ? `<div class="section-t"><i>📸</i> A barriga, semana a semana</div><div class="fotos">${d.fotos.map(f => `<figure><img src="${esc(f.url)}" alt="Foto da barriga${f.semana != null ? ' com ' + f.semana + ' semanas' : ''}" loading="lazy"><figcaption>${f.semana != null ? f.semana + ' semanas' : ''}${f.titulo ? ' · ' + esc(f.titulo) : ''}</figcaption></figure>`).join('')}</div>` : ''}
+    <div class="card" style="margin-top:14px"><b>Como você pode ajudar</b><ul class="dicas">${(DICAS[d.papel] || DICAS.familia).map(x => `<li>${x}</li>`).join('')}</ul>
+      <p class="muted" style="margin:10px 0 0;line-height:1.55;font-size:13px">Conheça os sinais de alerta da Caderneta: sangramento, dor de cabeça forte, febre, inchaço repentino ou o bebê mexendo menos. Nesses casos, ela deve procurar atendimento.</p></div>
+    ${formRecado(d, quem)}
+    <div class="card" style="text-align:center;background:var(--grad-soft)"><b>🎁 Quer dar um presente útil?</b><p class="muted" style="font-size:13px;margin:6px 0 10px">Dê o Ninho+ para ${quem}: diário da barriga, kit do parto e exames da Caderneta.</p><a class="btn full" href="presente.html" style="text-decoration:none;display:block">Dar Ninho+ de presente</a></div>
+    <p class="muted" style="text-align:center;font-size:12px;margin-top:16px">Este link foi criado por ${quem} e pode ser desativado a qualquer momento. Nenhum dado de saúde é mostrado aqui.<br><a href="./" style="color:var(--violet)">Ninho</a> · baseado na Caderneta da Gestante</p>`;
+}
+carregar();
+</script>
+</body>
+</html>
